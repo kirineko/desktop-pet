@@ -1,0 +1,40 @@
+{
+  "name": "desktop-pet",
+  "version": "0.1.0",
+  "description": "像素桌面宠物 + Amazon 库存查询（菲比 / 咕嘎 / Doro / 糯糯）",
+  "main": "./out/main/index.js",
+  "author": "kirineko",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kirineko/desktop-pet.git"
+  },
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "test": "vitest run",
+    "preview": "electron-vite preview",
+    "rebuild:native": "electron-rebuild -f -w better-sqlite3",
+    "postinstall": "electron-rebuild -f -w better-sqlite3 || true",
+    "build:mac": "npm run build && electron-builder --mac",
+    "build:win": "npm run build && electron-builder --win",
+    "build:unpack": "npm run build && electron-builder --dir"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^22.10.0",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "electron-rebuild": "^3.2.9",
+    "electron-vite": "^2.3.0",
+    "jsdom": "^29.1.1",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11",
+    "vitest": "^4.1.10"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.11.1",
+    "cheerio": "^1.2.0",
+    "undici": "^6.27.0"
+  }
+}

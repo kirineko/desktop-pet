@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>库存查询</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-view">跳到主要内容</a>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="sidebar-head">
+          <h1>库存查询</h1>
+          <p class="subtitle">重点找出每批中缺货的商品</p>
+        </div>
+
+        <div class="sidebar-actions">
+          <button type="button" class="btn primary block" id="btn-new-task">
+            <span aria-hidden="true">+</span> 新建任务
+          </button>
+          <button type="button" class="btn ghost block" id="btn-open-tools">
+            商品码转换
+          </button>
+        </div>
+
+        <div class="sidebar-list-head">
+          <span>全部任务</span>
+          <span class="count" id="task-count">0</span>
+        </div>
+
+        <nav class="task-list" id="task-list" aria-label="任务列表"></nav>
+      </aside>
+
+      <main class="main" id="main-view" tabindex="-1">
+        <!-- 新建任务 -->
+        <section class="view create-view" id="create-view">
+          <div class="view-inner">
+            <header class="view-title">
+              <h2>新建任务</h2>
+              <p class="view-desc">搜到商品 = 有货 · 未搜到 = 缺货</p>
+            </header>
+
+            <div class="mode-row" role="radiogroup" aria-label="搜索模式">
+              <button type="button" class="mode-btn active" data-mode="a" aria-pressed="true">
+                <strong>链接查询</strong><small>A</small>
+              </button>
+              <button type="button" class="mode-btn" data-mode="b" aria-pressed="false">
+                <strong>商品码</strong><small>B</small>
+              </button>
+              <button type="button" class="mode-btn" data-mode="ab" aria-pressed="false">
+                <strong>双重确认</strong><small>A + B</small>
+              </button>
+            </div>
+            <p class="hint" id="mode-hint">粘贴亚马逊商品链接，每行一条</p>
+
+            <label class="field">
+              <span>任务名称（可选）</span>
+              <input
+                id="job-name"
+                name="job-name"
+                type="text"
+                autocomplete="off"
+                placeholder="留空自动生成…"
+              />
+            </label>
+
+            <label class="field grow">
+              <span>输入列表</span>
+              <textarea
+                id="job-input"
+                name="job-input"
+                autocomplete="off"
+                spellcheck="false"
+                translate="no"
+                placeholder="例如：https://www.amazon.co.jp/dp/…"
+              ></textarea>
+            </label>
+
+            <div class="row between">
+              <span class="count" id="line-count">0 条</span>
+              <button type="button" class="btn primary" id="btn-start">开始查询</button>
+            </div>
+            <p class="error" id="create-error" role="alert" aria-live="polite" hidden></p>
+          </div>
+        </section>
+
+        <!-- 任务详情 -->
+        <section class="view detail-view" id="detail-view" hidden>
+          <header class="detail-head">
+            <div class="detail-title-wrap">
+              <h2 id="detail-title">任务</h2>
+              <p class="detail-meta" id="detail-meta"></p>
+            </div>
+            <div class="detail-controls">
+              <span id="detail-status-badge" class="job-status-badge pending">等待中</span>
+              <button type="button" class="btn" id="btn-pause">暂停</button>
+              <button type="button" class="btn" id="btn-resume">继续</button>
+              <button type="button" class="btn danger" id="btn-cancel">取消</button>
+            </div>
+          </header>
+
+          <div class="progress-row">
+            <span>任务进度</span>
+            <strong id="progress-text">0%</strong>
+          </div>
+          <div
+            class="progress"
+            role="progressbar"
+            aria-label="查询进度"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+          >
+            <div class="progress-bar" id="progress-bar"></div>
+          </div>
+
+          <div class="oos-hero" id="oos-hero">
+            <div class="oos-hero-main">
+              <span class="oos-hero-label">缺货商品</span>
+              <span class="oos-hero-count" id="oos-count">0</span>
+            </div>
+            <div class="oos-hero-side">
+              <p class="oos-hero-sub" id="oos-sub">正在查询中…</p>
+              <button type="button" class="btn small" id="btn-copy-oos">复制缺货清单</button>
+            </div>
+          </div>
+
+          <div class="stat-strip" id="job-stats"></div>
+
+          <div class="results-toolbar">
+            <div class="filter-group" id="filter-group" role="group" aria-label="结果筛选">
+              <button type="button" class="chip active" data-filter="out_of_stock" aria-pressed="true">缺货</button>
+              <button type="button" class="chip" data-filter="in_stock" aria-pressed="false">有货</button>
+              <button type="button" class="chip" data-filter="failed" aria-pressed="false">失败</button>
+              <button type="button" class="chip" data-filter="all" aria-pressed="false">全部</button>
+            </div>
+            <button type="button" class="btn" id="btn-copy-failed">复制失败输入</button>
+          </div>
+          <div class="results" id="results" aria-live="polite"></div>
+        </section>
+
+        <!-- 空状态 -->
+        <section class="view empty-view" id="empty-view" hidden>
+          <div class="empty-box">
+            <div class="empty-mark" aria-hidden="true">📦</div>
+            <h2>还没有任务</h2>
+            <p>创建一个任务，开始批量核对亚马逊库存。</p>
+            <button type="button" class="btn primary" id="btn-empty-new">+ 新建任务</button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- 工具遮罩：商品码转换 -->
+    <div class="modal-backdrop" id="tools-modal" hidden>
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tools-title"
+      >
+        <header class="modal-head">
+          <h2 id="tools-title">商品码转换</h2>
+          <button type="button" class="icon-btn" id="tools-close" aria-label="关闭">✕</button>
+        </header>
+        <p class="hint">后台原商品码 → ASIN，可直接用于链接查询。</p>
+        <label class="field">
+          <span>后台原商品码</span>
+          <textarea
+            id="transform-in"
+            name="transform-input"
+            rows="5"
+            autocomplete="off"
+            spellcheck="false"
+            translate="no"
+            placeholder="每行一条后台原商品码…"
+          ></textarea>
+        </label>
+        <div class="row between">
+          <span class="count" id="transform-count"></span>
+          <div class="row">
+            <button type="button" class="btn" id="btn-transform-copy">复制结果</button>
+            <button type="button" class="btn primary" id="btn-transform">转换</button>
+          </div>
+        </div>
+        <label class="field">
+          <span>转换结果</span>
+          <textarea
+            id="transform-out"
+            name="transform-output"
+            rows="5"
+            readonly
+            translate="no"
+            placeholder="转换结果…"
+          ></textarea>
+        </label>
+      </div>
+    </div>
+
+    <script type="module" src="./panel.ts"></script>
+  </body>
+</html>
