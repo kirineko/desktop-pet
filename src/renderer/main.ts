@@ -73,14 +73,15 @@ async function bootstrap(): Promise<void> {
     pet.setBusinessState('busy')
   }
 
-  const labels: Record<PetId, string> = {
-    feibi: '菲比来啦～',
-    guga: '咕嘎！',
-    doro: 'Doro 报到！',
-    nuonuo: '糯糯来了～'
+  const welcomeLines: Record<PetId, string[]> = {
+    feibi: ['菲比来啦～', '菲比报到，请多指教！', '今天也一起加油吧～'],
+    guga: ['咕嘎！', '咕嘎咕嘎～上线！', '咕嘎来啦，开始吧！'],
+    doro: ['Doro 报到！', '嘿嘿，Doro 来了～', 'Doro 已就位！'],
+    nuonuo: ['糯糯来了～', '糯糯软软地出现了…', '嗯…糯糯醒啦']
   }
   if (!isSessionBusy(initialSession) && !initialStatus.hasJob) {
-    pet.say(labels[config.petId])
+    const lines = welcomeLines[config.petId]
+    pet.say(lines[Math.floor(Math.random() * lines.length)])
   }
 }
 
