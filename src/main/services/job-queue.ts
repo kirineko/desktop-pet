@@ -233,7 +233,11 @@ export class JobQueue {
               ? null
               : result.stockStatus ?? null,
           message: result.message ?? null,
-          searchUrl: result.searchUrl ?? null
+          searchUrl: result.searchUrl ?? null,
+          title: result.title ?? null,
+          price: result.price ?? null,
+          stockDetail: result.stockDetail ?? null,
+          deliveryInfo: result.deliveryInfo ?? null
         })
 
         const shouldAlertOutOfStock =

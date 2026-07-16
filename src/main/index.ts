@@ -4,6 +4,7 @@ import {
   ipcMain,
   Menu,
   screen,
+  shell,
   Tray
 } from 'electron'
 import { join } from 'path'
@@ -430,6 +431,14 @@ function registerIpc(): void {
   ipcMain.handle('export-out-of-stock', (_event, jobId: string) =>
     jobQueue.exportOutOfStock(jobId)
   )
+
+  ipcMain.handle('open-external', async (_event, url: unknown) => {
+    const target = typeof url === 'string' ? url.trim() : ''
+    if (!/^https?:\/\//i.test(target)) {
+      throw new Error('无效的外部链接')
+    }
+    await shell.openExternal(target)
+  })
 }
 
 function wireBusinessEvents(): void {

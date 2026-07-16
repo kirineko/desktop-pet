@@ -41,6 +41,7 @@ const api: DesktopPetApi = {
   exportFailed: (jobId: string) => ipcRenderer.invoke('export-failed', jobId),
   exportOutOfStock: (jobId: string) =>
     ipcRenderer.invoke('export-out-of-stock', jobId),
+  openExternal: (url: string) => ipcRenderer.invoke('open-external', url),
   onConfigChanged: (cb) => {
     const listener = (_event: IpcRendererEvent, config: PetConfig): void => {
       cb(config)

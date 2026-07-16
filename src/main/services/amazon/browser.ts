@@ -21,6 +21,12 @@ export type NavigateOptions = {
   timeoutMs?: number
   /** soft-block 时是否等待后重读 HTML（真实浏览器有时能过轻量验证） */
   retrySoftBlock?: boolean
+  /**
+   * 导航完成后等待关键 DOM 选择器（任一命中即可）。
+   * 用于等 Amazon 水合标题/价格，避免 did-finish-load 过早取 HTML。
+   */
+  waitForAny?: string[]
+  waitForMs?: number
 }
 
 /**
@@ -69,6 +75,39 @@ export class AmazonBrowser {
     return run
   }
 
+  private async waitForDom(
+    selectors: string[],
+    timeoutMs: number
+  ): Promise<void> {
+    if (selectors.length === 0) return
+    const win = this.ensureWindow()
+    try {
+      await win.webContents.executeJavaScript(
+        `(() => {
+          const selectors = ${JSON.stringify(selectors)};
+          const timeoutMs = ${Math.max(0, timeoutMs)};
+          return new Promise((resolve) => {
+            const started = Date.now();
+            const tick = () => {
+              if (selectors.some((s) => document.querySelector(s))) {
+                resolve(true);
+                return;
+              }
+              if (Date.now() - started >= timeoutMs) {
+                resolve(false);
+                return;
+              }
+              setTimeout(tick, 200);
+            };
+            tick();
+          });
+        })()`
+      )
+    } catch {
+      // ignore wait failures; caller still reads whatever HTML is available
+    }
+  }
+
   private async doNavigate(
     url: string,
     options: NavigateOptions
@@ -76,7 +115,9 @@ export class AmazonBrowser {
     const {
       referrer,
       timeoutMs = DEFAULT_NAV_TIMEOUT_MS,
-      retrySoftBlock = true
+      retrySoftBlock = true,
+      waitForAny = [],
+      waitForMs = 8_000
     } = options
     const win = this.ensureWindow()
     const wc = win.webContents
@@ -126,12 +167,15 @@ export class AmazonBrowser {
       })
     })
 
+    await this.waitForDom(waitForAny, waitForMs)
+
     let html = (await wc.executeJavaScript(
       'document.documentElement.outerHTML'
     )) as string
 
     if (retrySoftBlock && isSoftBlockedHtml(html)) {
       await sleep(2000 + Math.random() * 2000)
+      await this.waitForDom(waitForAny, Math.min(waitForMs, 4_000))
       html = (await wc.executeJavaScript(
         'document.documentElement.outerHTML'
       )) as string

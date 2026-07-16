@@ -51,7 +51,27 @@ export function getDb(): Database.Database {
     CREATE INDEX IF NOT EXISTS idx_items_job ON items(job_id, seq);
     CREATE INDEX IF NOT EXISTS idx_items_job_status ON items(job_id, status);
   `)
+  ensureItemColumns(db)
   return db
+}
+
+function ensureItemColumns(database: Database.Database): void {
+  const cols = new Set(
+    (
+      database.prepare(`PRAGMA table_info(items)`).all() as Array<{ name: string }>
+    ).map((c) => c.name)
+  )
+  const extras: Array<[string, string]> = [
+    ['title', 'TEXT'],
+    ['price', 'TEXT'],
+    ['stock_detail', 'TEXT'],
+    ['delivery_info', 'TEXT']
+  ]
+  for (const [name, type] of extras) {
+    if (!cols.has(name)) {
+      database.exec(`ALTER TABLE items ADD COLUMN ${name} ${type}`)
+    }
+  }
 }
 
 function rowToJob(row: Record<string, unknown>): JobRecord {
@@ -84,6 +104,10 @@ function rowToItem(row: Record<string, unknown>): ItemRecord {
     stockStatus: row.stock_status == null ? null : String(row.stock_status),
     message: row.message == null ? null : String(row.message),
     searchUrl: row.search_url == null ? null : String(row.search_url),
+    title: row.title == null ? null : String(row.title),
+    price: row.price == null ? null : String(row.price),
+    stockDetail: row.stock_detail == null ? null : String(row.stock_detail),
+    deliveryInfo: row.delivery_info == null ? null : String(row.delivery_info),
     finishedAt: row.finished_at == null ? null : Number(row.finished_at)
   }
 }
@@ -183,6 +207,10 @@ export function saveItemResult(
     stockStatus?: string | null
     message?: string | null
     searchUrl?: string | null
+    title?: string | null
+    price?: string | null
+    stockDetail?: string | null
+    deliveryInfo?: string | null
   }
 ): JobRecord {
   const database = getDb()
@@ -193,7 +221,9 @@ export function saveItemResult(
       .prepare(
         `UPDATE items SET
           status = ?, asin = ?, in_stock = ?, a_in_stock = ?, b_in_stock = ?,
-          stock_status = ?, message = ?, search_url = ?, finished_at = ?
+          stock_status = ?, message = ?, search_url = ?,
+          title = ?, price = ?, stock_detail = ?, delivery_info = ?,
+          finished_at = ?
          WHERE id = ?`
       )
       .run(
@@ -205,6 +235,10 @@ export function saveItemResult(
         result.stockStatus ?? null,
         result.message ?? null,
         result.searchUrl ?? null,
+        result.title ?? null,
+        result.price ?? null,
+        result.stockDetail ?? null,
+        result.deliveryInfo ?? null,
         now,
         itemId
       )

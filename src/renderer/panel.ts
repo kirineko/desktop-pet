@@ -6,7 +6,11 @@ import type {
   JobRunStatus,
   SearchMode
 } from '../shared/types'
-import { JOB_STATUS_LABELS, SEARCH_MODE_LABELS } from '../shared/types'
+import {
+  JOB_STATUS_LABELS,
+  RESULT_MODE_LABELS,
+  SEARCH_MODE_LABELS
+} from '../shared/types'
 
 const MODE_HINTS: Record<SearchMode, string> = {
   a: '粘贴亚马逊商品链接，每行一条',
@@ -122,10 +126,10 @@ function jobElapsedMs(job: JobRecord): number {
 }
 
 async function flash(btn: HTMLButtonElement, label: string): Promise<void> {
-  const original = btn.textContent
+  const original = btn.innerHTML
   btn.textContent = label
   setTimeout(() => {
-    btn.textContent = original
+    btn.innerHTML = original
   }, 1500)
 }
 
@@ -301,10 +305,40 @@ function badgeFor(item: ItemRecord): string {
   return '<span class="badge out">缺货</span>'
 }
 
-function resultClass(item: ItemRecord): string {
-  if (item.status === 'failed') return 'result fail'
-  if (item.status === 'done' && item.inStock === false) return 'result out'
-  return 'result'
+function rowClass(item: ItemRecord): string {
+  if (item.status === 'failed') return 'fail'
+  if (item.status === 'done' && item.inStock === false) return 'out'
+  return ''
+}
+
+const COPY_ICON = `<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10" fill="none" stroke="currentColor" stroke-width="2"/></svg>`
+const CHECK_ICON = `<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M5 12.5 10 17l9-10" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+const LINK_ICON = `<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M14 5h5v5M19 5l-8 8M11 5H7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`
+
+function copyCell(value: string | null | undefined, empty = '—'): string {
+  if (!value) return `<span class="cell-empty">${empty}</span>`
+  return `<div class="copy-cell">
+    <span class="cell-text mono" title="${escapeHtml(value)}">${escapeHtml(value)}</span>
+    <button type="button" class="icon-btn" data-copy="${escapeHtml(value)}" title="复制" aria-label="复制">${COPY_ICON}</button>
+  </div>`
+}
+
+function clampCell(value: string | null | undefined, empty = '—'): string {
+  if (!value) return `<span class="cell-empty">${empty}</span>`
+  return `<span class="clamp-text" title="${escapeHtml(value)}">${escapeHtml(value)}</span>`
+}
+
+function productUrlFor(item: ItemRecord): string | null {
+  if (item.asin) return `https://www.amazon.co.jp/dp/${item.asin}`
+  if (item.searchUrl && /^https?:\/\//i.test(item.searchUrl)) return item.searchUrl
+  return null
+}
+
+function detailText(item: ItemRecord): string {
+  const parts = [item.stockDetail || item.message, item.deliveryInfo].filter(
+    Boolean
+  ) as string[]
+  return parts.join(' · ')
 }
 
 function renderItems(items: ItemRecord[], total: number, mode: SearchMode): void {
@@ -312,30 +346,56 @@ function renderItems(items: ItemRecord[], total: number, mode: SearchMode): void
     els.results.innerHTML = '<div class="empty">该筛选下暂无结果</div>'
     return
   }
-  const cards = items
+  const modeLabel = RESULT_MODE_LABELS[mode]
+  const rows = items
     .map((item) => {
+      const url = productUrlFor(item)
       const ab =
         mode === 'ab'
-          ? `<div class="ab-flags">A ${item.aInStock ? '✓' : '✗'} · B ${item.bInStock ? '✓' : '✗'}${item.stockStatus ? ` · ${item.stockStatus}` : ''}</div>`
-          : item.stockStatus
-            ? `<div class="ab-flags">${escapeHtml(item.stockStatus)}</div>`
-            : ''
-      return `<div class="${resultClass(item)}">
-        <div class="top">
-          <span class="seq">#${item.seq}${item.asin ? ` · ${escapeHtml(item.asin)}` : ''}</span>
-          ${badgeFor(item)}
-        </div>
-        <div class="input-line" translate="no">${escapeHtml(item.input)}</div>
-        ${item.message ? `<div class="msg">${escapeHtml(item.message)}</div>` : ''}
-        ${ab}
-      </div>`
+          ? `A${item.aInStock ? '✓' : '✗'}/B${item.bInStock ? '✓' : '✗'}`
+          : item.stockStatus || ''
+      return `<tr class="${rowClass(item)}">
+        <td class="col-seq">#${item.seq}</td>
+        <td class="col-asin">${copyCell(item.asin)}</td>
+        <td class="col-price">${copyCell(item.price)}</td>
+        <td class="col-stock">${badgeFor(item)}</td>
+        <td class="col-mode"><span class="mode-tag">${escapeHtml(modeLabel)}</span>${ab ? `<div class="ab-mini">${escapeHtml(ab)}</div>` : ''}</td>
+        <td class="col-title">${clampCell(item.title || item.input)}</td>
+        <td class="col-detail">${clampCell(detailText(item))}</td>
+        <td class="col-link">${
+          url
+            ? `<div class="link-actions">
+                <button type="button" class="icon-btn" data-copy="${escapeHtml(url)}" title="复制链接" aria-label="复制链接">${COPY_ICON}</button>
+                <button type="button" class="icon-btn link" data-open="${escapeHtml(url)}" title="在浏览器打开" aria-label="在浏览器打开">${LINK_ICON}</button>
+              </div>`
+            : '<span class="cell-empty">—</span>'
+        }</td>
+      </tr>`
     })
     .join('')
   const note =
     total > items.length
       ? `<div class="results-note">共 ${total} 条，已显示前 ${items.length} 条</div>`
       : ''
-  els.results.innerHTML = cards + note
+  els.results.innerHTML = `
+    <div class="table-wrap">
+      <table class="result-table">
+        <thead>
+          <tr>
+            <th class="col-seq">#</th>
+            <th class="col-asin">商品码</th>
+            <th class="col-price">价格</th>
+            <th class="col-stock">库存</th>
+            <th class="col-mode">方式</th>
+            <th class="col-title">标题</th>
+            <th class="col-detail">详情</th>
+            <th class="col-link">链接</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    ${note}`
 }
 
 async function reloadItems(job: JobRecord): Promise<void> {
@@ -484,6 +544,36 @@ function bindEvents(): void {
     }
     await navigator.clipboard.writeText(text)
     void flash(els.btnCopyFailed, '已复制')
+  })
+
+  els.results.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement
+    const copyBtn = target.closest<HTMLButtonElement>('[data-copy]')
+    if (copyBtn?.dataset.copy) {
+      e.preventDefault()
+      void navigator.clipboard.writeText(copyBtn.dataset.copy).then(() => {
+        copyBtn.classList.add('copied')
+        copyBtn.innerHTML = CHECK_ICON
+        copyBtn.title = '已复制'
+        window.setTimeout(() => {
+          copyBtn.classList.remove('copied')
+          copyBtn.innerHTML = COPY_ICON
+          copyBtn.title = '复制'
+        }, 1200)
+      })
+      return
+    }
+    const openBtn = target.closest<HTMLButtonElement>('[data-open]')
+    if (openBtn?.dataset.open) {
+      e.preventDefault()
+      const url = openBtn.dataset.open
+      void window.desktopPet.openExternal(url).catch((err: unknown) => {
+        console.error('openExternal failed', err)
+        window.alert(
+          `无法打开浏览器：${err instanceof Error ? err.message : String(err)}`
+        )
+      })
+    }
   })
 
   els.btnTransform.addEventListener('click', async () => {

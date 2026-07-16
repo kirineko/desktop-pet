@@ -103,7 +103,8 @@ export class AmazonScraper {
   private async fetchHtml(
     url: string,
     host: string,
-    referer?: string
+    referer?: string,
+    waitForAny: string[] = []
   ): Promise<string> {
     let lastError: Error | null = null
 
@@ -124,7 +125,8 @@ export class AmazonScraper {
       try {
         const html = await getAmazonBrowser().navigate(url, {
           referrer: referer,
-          retrySoftBlock: true
+          retrySoftBlock: true,
+          waitForAny
         })
 
         if (isSoftBlockedHtml(html)) {
@@ -153,29 +155,40 @@ export class AmazonScraper {
     )
   }
 
-  private async checkA(
-    normalized: NormalizedInput
-  ): Promise<{ inStock: boolean; message: string }> {
+  private async checkA(normalized: NormalizedInput) {
     const host = getAmazonHost(normalized.productUrl)
     this.host = host
     if (!this.warmed) await this.warmUp(host)
     const html = await this.fetchHtml(
       normalized.productUrl,
       host,
-      `https://${host}/`
+      `https://${host}/`,
+      [
+        '#productTitle',
+        '#corePrice_feature_div .a-offscreen',
+        '.a-price .a-offscreen',
+        '.a-price-whole',
+        '#availability'
+      ]
     )
-    const parsed = parseASearchPage(html, normalized.asin)
-    return { inStock: parsed.inStock, message: parsed.message }
+    return parseASearchPage(html, normalized.asin)
   }
 
-  private async checkB(
-    normalized: NormalizedInput
-  ): Promise<{ inStock: boolean; message: string; searchUrl: string }> {
+  private async checkB(normalized: NormalizedInput) {
     const host = getAmazonHost(normalized.productUrl)
     this.host = host
     const searchUrl = `https://${host}/s?k=${normalized.asin}`
     if (!this.warmed) await this.warmUp(host)
-    const html = await this.fetchHtml(searchUrl, host, `https://${host}/`)
+    const html = await this.fetchHtml(
+      searchUrl,
+      host,
+      `https://${host}/`,
+      [
+        '.s-main-slot [data-asin]',
+        '.s-no-results',
+        "[cel_widget_id*='no-results']"
+      ]
+    )
     const parsed = parseBSearchPage(html, normalized.asin)
     return { ...parsed, searchUrl }
   }
@@ -200,11 +213,19 @@ export class AmazonScraper {
       let bInStock: boolean | undefined
       let message: string | undefined
       let searchUrl = normalized.productUrl
+      let title: string | null = null
+      let price: string | null = null
+      let stockDetail: string | null = null
+      let deliveryInfo: string | null = null
 
       if (mode === 'a' || mode === 'ab') {
         const a = await this.checkA(normalized)
         aInStock = a.inStock
         message = a.message
+        title = a.title
+        price = a.price
+        stockDetail = a.stockDetail
+        deliveryInfo = a.deliveryInfo
       }
 
       if (mode === 'ab') {
@@ -215,7 +236,14 @@ export class AmazonScraper {
         const b = await this.checkB(normalized)
         bInStock = b.inStock
         searchUrl = b.searchUrl
-        if (mode === 'b') message = b.message
+        if (mode === 'b') {
+          message = b.message
+          title = b.title
+          price = b.price
+        } else if (!title && b.title) {
+          title = b.title
+        }
+        if (!price && b.price) price = b.price
       }
 
       let inStock: boolean
@@ -231,7 +259,11 @@ export class AmazonScraper {
         bInStock,
         stockStatus: stockStatusLabel(aInStock ?? null, bInStock ?? null, mode),
         message,
-        searchUrl
+        searchUrl,
+        title,
+        price,
+        stockDetail,
+        deliveryInfo
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)

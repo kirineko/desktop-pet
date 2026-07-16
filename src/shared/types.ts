@@ -39,6 +39,13 @@ export const SEARCH_MODE_LABELS: Record<SearchMode, string> = {
   ab: '双重确认(A+B)'
 }
 
+/** 结果列表中的简短查询方式标签 */
+export const RESULT_MODE_LABELS: Record<SearchMode, string> = {
+  a: '链接',
+  b: '搜索',
+  ab: '全部'
+}
+
 export type JobRunStatus =
   | 'pending'
   | 'running'
@@ -77,6 +84,10 @@ export interface ItemRecord {
   stockStatus: string | null
   message: string | null
   searchUrl: string | null
+  title: string | null
+  price: string | null
+  stockDetail: string | null
+  deliveryInfo: string | null
   finishedAt: number | null
 }
 
@@ -114,6 +125,10 @@ export interface CheckResult {
   stockStatus?: string
   message?: string
   searchUrl?: string
+  title?: string | null
+  price?: string | null
+  stockDetail?: string | null
+  deliveryInfo?: string | null
 }
 
 export interface TransformCodeResult {
@@ -215,6 +230,7 @@ export interface DesktopPetApi {
   transformCodes: (text: string) => Promise<TransformCodesResponse>
   exportFailed: (jobId: string) => Promise<string>
   exportOutOfStock: (jobId: string) => Promise<string>
+  openExternal: (url: string) => Promise<void>
   onConfigChanged: (cb: (config: PetConfig) => void) => () => void
   onBusinessEvent: (cb: (event: PetBusinessEvent) => void) => () => void
   onJobUpdated: (cb: (job: JobRecord | null) => void) => () => void

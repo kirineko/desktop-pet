@@ -1,4 +1,4 @@
-import { BrowserWindow, app } from 'electron'
+import { BrowserWindow, app, shell } from 'electron'
 import { join } from 'path'
 import { resolveAppIcon } from './icons'
 
@@ -44,6 +44,13 @@ export function openPanelWindow(): void {
   panelWindow.once('ready-to-show', () => {
     panelWindow?.maximize()
     panelWindow?.show()
+  })
+
+  panelWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (/^https?:\/\//i.test(url)) {
+      void shell.openExternal(url)
+    }
+    return { action: 'deny' }
   })
 
   panelWindow.on('closed', () => {
