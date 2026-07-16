@@ -116,6 +116,35 @@ export const EMPTY_JOB_STATUS: JobStatus = {
   failedCount: 0
 }
 
+/** 本次应用启动后创建的任务汇总（对齐原悬浮球） */
+export interface SessionSummary {
+  hasJob: boolean
+  jobCount: number
+  jobName: string
+  status: 'idle' | 'pending' | 'running' | 'paused' | 'completed'
+  statusLabel: string
+  totalCount: number
+  completedCount: number
+  percent: number
+  inStockCount: number
+  outOfStockCount: number
+  failedCount: number
+}
+
+export const EMPTY_SESSION_SUMMARY: SessionSummary = {
+  hasJob: false,
+  jobCount: 0,
+  jobName: '等待任务',
+  status: 'idle',
+  statusLabel: '等待任务',
+  totalCount: 0,
+  completedCount: 0,
+  percent: 0,
+  inStockCount: 0,
+  outOfStockCount: 0,
+  failedCount: 0
+}
+
 export interface CheckResult {
   success: boolean
   inStock: boolean | null
@@ -165,6 +194,7 @@ export interface NetworkStatus {
 /** 主进程 → 渲染进程的业务事件 */
 export type PetBusinessEvent =
   | { type: 'status'; status: JobStatus }
+  | { type: 'session'; summary: SessionSummary }
   | { type: 'alert'; message: string }
   | { type: 'message'; message: string; persistent?: boolean }
 
@@ -213,6 +243,7 @@ export interface DesktopPetApi {
   showPet: () => Promise<void>
   getNetworkStatus: () => Promise<NetworkStatus>
   getJobStatus: () => Promise<JobStatus>
+  getSessionSummary: () => Promise<SessionSummary>
   createJob: (input: CreateJobInput) => Promise<CreateJobResult>
   pauseJob: () => Promise<JobRecord | null>
   resumeJob: () => Promise<JobRecord | null>

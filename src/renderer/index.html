@@ -21,6 +21,28 @@
       ></button>
       <div id="pet-stage" class="pet-stage">
         <img id="pet-image" class="pet-image state-idle" alt="桌面宠物" draggable="false" />
+        <div id="session-hud" class="session-hud hidden" aria-live="polite">
+          <div id="session-detail" class="session-detail" hidden>
+            <div class="session-detail-title" id="session-detail-title">本次任务</div>
+            <div class="session-detail-row">任务数：<strong id="session-detail-count">0</strong></div>
+            <div class="session-detail-row">
+              总进度：<strong id="session-detail-progress">0/0（0%）</strong>
+            </div>
+            <div class="session-detail-row">
+              状态：<strong id="session-detail-status">等待任务</strong>
+            </div>
+            <div class="session-detail-stats">
+              <span class="ok">有货 <strong id="session-detail-in">0</strong></span>
+              <span class="out">无货 <strong id="session-detail-out">0</strong></span>
+              <span class="fail">失败 <strong id="session-detail-fail">0</strong></span>
+            </div>
+            <div class="session-detail-hint">双击打开面板</div>
+          </div>
+          <div id="session-chip" class="session-chip" title="悬停查看本次启动汇总">
+            <div class="session-chip-line" id="session-chip-progress">0/0 · 0%</div>
+            <div class="session-chip-line muted" id="session-chip-issues">无货 0 · 失败 0</div>
+          </div>
+        </div>
       </div>
     </div>
     <script type="module" src="./main.ts"></script>

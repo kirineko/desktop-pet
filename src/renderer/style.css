@@ -120,14 +120,137 @@ body {
   }
 }
 
+/* —— 本次启动任务汇总（宠物下方 chip + 悬停详情） —— */
+.session-hud {
+  position: relative;
+  margin-top: 4px;
+  width: 156px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: auto;
+}
+
+.session-hud.hidden {
+  display: none;
+}
+
+.session-chip {
+  width: 100%;
+  padding: 5px 8px 6px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 2px solid #111827;
+  box-shadow: 0 2px 0 #111827;
+  text-align: center;
+  line-height: 1.25;
+}
+
+.session-hud[data-status='running'] .session-chip,
+.session-hud[data-status='pending'] .session-chip {
+  border-color: #2563eb;
+  box-shadow: 0 2px 0 #2563eb;
+  background: #eff6ff;
+}
+
+.session-hud[data-status='paused'] .session-chip {
+  border-color: #d97706;
+  box-shadow: 0 2px 0 #d97706;
+  background: #fffbeb;
+}
+
+.session-chip-line {
+  font-size: 11px;
+  font-weight: 700;
+  color: #111827;
+  font-variant-numeric: tabular-nums;
+}
+
+.session-chip-line.muted {
+  margin-top: 1px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.session-detail {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  width: 168px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(17, 24, 39, 0.94);
+  color: #f9fafb;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+  z-index: 5;
+  pointer-events: auto;
+}
+
+.session-detail[hidden] {
+  display: none !important;
+}
+
+.session-detail-title {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.session-detail-row {
+  font-size: 11px;
+  color: #d1d5db;
+  margin-top: 3px;
+}
+
+.session-detail-row strong {
+  color: #fff;
+  font-weight: 700;
+}
+
+.session-detail-stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.session-detail-stats .ok {
+  color: #4ade80;
+}
+
+.session-detail-stats .out {
+  color: #f87171;
+}
+
+.session-detail-stats .fail {
+  color: #e5e7eb;
+}
+
+.session-detail-hint {
+  margin-top: 8px;
+  font-size: 10px;
+  color: #9ca3af;
+  text-align: center;
+}
+
 /* —— 宠物舞台 —— */
 .pet-stage {
-  width: 140px;
-  height: 140px;
+  width: 168px;
+  height: auto;
+  min-height: 140px;
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
   cursor: grab;
+  position: relative;
 }
 
 .pet-stage:active {

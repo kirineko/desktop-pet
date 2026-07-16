@@ -11,6 +11,11 @@ import { jobToStatus } from '../../shared/types'
 import { AmazonScraper } from './amazon/scraper'
 import { parseAndValidateInputs } from './amazon/normalize'
 import * as store from './db'
+import {
+  getSessionSummary,
+  registerSessionJob,
+  unregisterSessionJob
+} from './session-summary'
 
 type Listener = (event: PetBusinessEvent) => void
 type JobListener = (job: JobRecord | null) => void
@@ -47,6 +52,11 @@ export class JobQueue {
     } else {
       this.emit({ type: 'status', status: jobToStatus(null) })
     }
+    this.emitSession()
+  }
+
+  private emitSession(): void {
+    this.emit({ type: 'session', summary: getSessionSummary() })
   }
 
   getStatus() {
@@ -55,6 +65,10 @@ export class JobQueue {
     const recent = store.listJobs(1)[0]
     if (recent?.status === 'completed') return jobToStatus(recent)
     return jobToStatus(null)
+  }
+
+  getSessionSummary() {
+    return getSessionSummary()
   }
 
   getActiveJob(): JobRecord | null {
@@ -108,6 +122,7 @@ export class JobQueue {
       (input.name || '').trim() ||
       `查询 ${new Date().toLocaleString('zh-CN', { hour12: false })}`
     const job = store.createJob(randomUUID(), name, input.mode, inputs)
+    registerSessionJob(job.id)
     this.emit({ type: 'message', message: `开始查 ${inputs.length} 条啦～` })
     this.emitJob(job)
     void this.loop()
@@ -159,6 +174,7 @@ export class JobQueue {
       this.pauseRequested = false
     }
     store.deleteJob(jobId)
+    unregisterSessionJob(jobId)
     this.emitJob(store.getActiveJob())
     return { ok: true }
   }

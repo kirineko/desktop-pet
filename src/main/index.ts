@@ -27,8 +27,8 @@ import {
   type PetId
 } from '../shared/types'
 
-const WINDOW_WIDTH = 180
-const WINDOW_HEIGHT = 240
+const WINDOW_WIDTH = 200
+const WINDOW_HEIGHT = 300
 
 let mainWindow: BrowserWindow | null = null
 let tray: Tray | null = null
@@ -370,6 +370,8 @@ function registerIpc(): void {
   ipcMain.handle('get-network-status', () => jobQueue.getNetworkStatus())
 
   ipcMain.handle('get-job-status', () => dataSource.getStatus())
+
+  ipcMain.handle('get-session-summary', () => dataSource.getSessionSummary())
 
   ipcMain.handle('create-job', (_event, input: CreateJobInput) => {
     const result = jobQueue.createJob(input)

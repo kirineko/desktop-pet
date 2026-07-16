@@ -1,5 +1,9 @@
-import type { JobStatus, PetBusinessEvent } from '../../shared/types'
-import { EMPTY_JOB_STATUS } from '../../shared/types'
+import type {
+  JobStatus,
+  PetBusinessEvent,
+  SessionSummary
+} from '../../shared/types'
+import { EMPTY_JOB_STATUS, EMPTY_SESSION_SUMMARY } from '../../shared/types'
 import type { JobQueue } from './job-queue'
 
 /**
@@ -9,6 +13,7 @@ import type { JobQueue } from './job-queue'
  */
 export interface PetDataSource {
   getStatus(): JobStatus
+  getSessionSummary(): SessionSummary
   start(): void
   stop(): void
   onEvent(listener: (event: PetBusinessEvent) => void): () => void
@@ -22,6 +27,10 @@ export class StockPetDataSource implements PetDataSource {
 
   getStatus(): JobStatus {
     return this.queue.getStatus()
+  }
+
+  getSessionSummary(): SessionSummary {
+    return this.queue.getSessionSummary()
   }
 
   start(): void {
@@ -51,6 +60,10 @@ export class NullPetDataSource implements PetDataSource {
 
   getStatus(): JobStatus {
     return { ...EMPTY_JOB_STATUS }
+  }
+
+  getSessionSummary(): SessionSummary {
+    return { ...EMPTY_SESSION_SUMMARY }
   }
 
   start(): void {}

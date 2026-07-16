@@ -22,6 +22,7 @@ const api: DesktopPetApi = {
   showPet: () => ipcRenderer.invoke('show-pet'),
   getNetworkStatus: () => ipcRenderer.invoke('get-network-status'),
   getJobStatus: () => ipcRenderer.invoke('get-job-status'),
+  getSessionSummary: () => ipcRenderer.invoke('get-session-summary'),
   createJob: (input: CreateJobInput) => ipcRenderer.invoke('create-job', input),
   pauseJob: () => ipcRenderer.invoke('pause-job'),
   resumeJob: () => ipcRenderer.invoke('resume-job'),
