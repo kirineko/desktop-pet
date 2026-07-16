@@ -1,9 +1,9 @@
+import { net, session } from 'electron'
 import type {
   CheckResult,
   NetworkStatus,
   SearchMode
 } from '../../../shared/types'
-import { EnvHttpProxyAgent, type Dispatcher } from 'undici'
 import {
   getAmazonHost,
   normalizeForMode,
@@ -18,6 +18,7 @@ const MAX_RETRIES = Number(process.env.AMAZON_MAX_RETRIES || 3)
 const RETRY_BASE_DELAY_MS = Number(process.env.AMAZON_RETRY_DELAY || 2) * 1000
 const SESSION_REFRESH_EVERY = Number(process.env.AMAZON_SESSION_REFRESH || 40)
 const RETRIABLE_STATUS = new Set([429, 500, 502, 503, 504])
+const PROXY_PROBE_URL = 'https://www.amazon.co.jp'
 
 const REQUEST_HEADERS: Record<string, string> = {
   'User-Agent':
@@ -76,26 +77,46 @@ function absorbSetCookie(
   }
 }
 
+/** 解析 Chromium resolveProxy 结果，例如 "PROXY 127.0.0.1:7897; DIRECT" */
+export function describeResolvedProxy(proxyInfo: string): NetworkStatus {
+  const first = proxyInfo.split(';')[0]?.trim() || ''
+  if (!first || /^DIRECT$/i.test(first)) {
+    return {
+      mode: 'missing',
+      label: '未检测到代理，Amazon JP 可能无法访问'
+    }
+  }
+
+  const match = first.match(/^(PROXY|SOCKS5?|HTTPS)\s+(.+)$/i)
+  if (match) {
+    return {
+      mode: 'proxy',
+      label: `已启用系统代理 ${match[2]}`
+    }
+  }
+
+  return {
+    mode: 'proxy',
+    label: '已启用系统代理'
+  }
+}
+
 export class AmazonScraper {
   private cookieJar = new Map<string, string>()
   private requestCount = 0
   private host = 'www.amazon.co.jp'
   private warmed = false
-  private readonly dispatcher: Dispatcher = new EnvHttpProxyAgent()
 
-  getNetworkStatus(): NetworkStatus {
-    const source = [
-      'HTTPS_PROXY',
-      'https_proxy',
-      'HTTP_PROXY',
-      'http_proxy'
-    ].find((key) => Boolean(process.env[key]))
-    return source
-      ? { mode: 'proxy', label: `已启用 ${source}` }
-      : {
-          mode: 'missing',
-          label: '未检测到代理，Amazon JP 可能无法访问'
-        }
+  async getNetworkStatus(): Promise<NetworkStatus> {
+    try {
+      const proxyInfo = await session.defaultSession.resolveProxy(PROXY_PROBE_URL)
+      return describeResolvedProxy(proxyInfo)
+    } catch {
+      return {
+        mode: 'missing',
+        label: '未检测到代理，Amazon JP 可能无法访问'
+      }
+    }
   }
 
   async throttle(): Promise<void> {
@@ -113,12 +134,12 @@ export class AmazonScraper {
   private async warmUp(host: string): Promise<void> {
     try {
       // 预热仅尝试一次，避免代理不可用时叠加完整重试导致长时间无响应。
-      const response = await fetch(`https://${host}/`, {
+      // 使用 net.fetch，走 Chromium 网络栈，自动使用系统代理 / PAC。
+      const response = await net.fetch(`https://${host}/`, {
         headers: REQUEST_HEADERS,
         redirect: 'follow',
-        signal: AbortSignal.timeout(8000),
-        dispatcher: this.dispatcher
-      } as RequestInit & { dispatcher: Dispatcher })
+        signal: AbortSignal.timeout(8000)
+      })
       absorbSetCookie(this.cookieJar, response)
       await sleep(200 + Math.random() * 300)
       this.warmed = response.ok
@@ -157,12 +178,11 @@ export class AmazonScraper {
           headers['Sec-Fetch-Site'] = 'same-origin'
         }
 
-        const response = await fetch(url, {
+        const response = await net.fetch(url, {
           headers,
           redirect: 'follow',
-          signal: AbortSignal.timeout(20000),
-          dispatcher: this.dispatcher
-        } as RequestInit & { dispatcher: Dispatcher })
+          signal: AbortSignal.timeout(20000)
+        })
 
         absorbSetCookie(this.cookieJar, response)
         const html = await response.text()

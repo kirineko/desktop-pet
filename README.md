@@ -72,19 +72,7 @@ git push origin v0.1.0
 | `AMAZON_REQUEST_INTERVAL` | `1.8` | 请求间隔（秒） |
 | `AMAZON_REQUEST_JITTER` | `0.8` | 间隔抖动（秒） |
 | `AMAZON_MAX_RETRIES` | `3` | 重试次数 |
-| `HTTP_PROXY` / `HTTPS_PROXY` | — | Amazon 请求代理（应用会显式读取） |
-| `NO_PROXY` | — | 无需代理的主机 |
-
-Amazon JP 通常需要代理，请在**启动桌宠前**设置环境变量：
-
-```bash
-# macOS / Linux
-HTTPS_PROXY=http://127.0.0.1:7890 npm run dev
-
-# Windows CMD
-set HTTPS_PROXY=http://127.0.0.1:7890
-npm run dev
-```
+Amazon JP 请求通过 Electron `net.fetch`（Chromium 网络栈）发出，会自动使用系统代理 / PAC（与浏览器一致）。请确保系统已开启可用的代理后再访问 Amazon JP。
 
 ## License
 
