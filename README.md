@@ -61,8 +61,8 @@ npm run build:win   # Windows → dist/*.exe
 产物上传为 Actions Artifact；打 `v*` 标签时会自动创建 GitHub Release 并附带安装包。
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.2.0
+git push origin v0.2.0
 ```
 
 ## 环境变量（可选）
