@@ -1,5 +1,6 @@
 import { BrowserWindow, app } from 'electron'
 import { join } from 'path'
+import { resolveAppIcon } from './icons'
 
 const PANEL_WIDTH = 1200
 const PANEL_HEIGHT = 820
@@ -21,6 +22,7 @@ export function openPanelWindow(): void {
     return
   }
 
+  const appIcon = resolveAppIcon()
   panelWindow = new BrowserWindow({
     width: PANEL_WIDTH,
     height: PANEL_HEIGHT,
@@ -30,6 +32,7 @@ export function openPanelWindow(): void {
     show: false,
     backgroundColor: '#faf7f0',
     autoHideMenuBar: true,
+    ...(appIcon.isEmpty() ? {} : { icon: appIcon }),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,

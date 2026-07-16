@@ -9,19 +9,24 @@ files:
 extraResources:
   - from: resources/tray.png
     to: tray.png
+  - from: resources/icon.png
+    to: icon.png
 asar: true
 asarUnpack:
   - node_modules/better-sqlite3/**/*
 mac:
   category: public.app-category.entertainment
+  icon: build/icon.png
   target:
     - dmg
     - zip
   identity: null
 win:
+  icon: build/icon.png
   target:
     - nsis
     - portable
+
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true

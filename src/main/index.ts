@@ -3,11 +3,11 @@ import {
   BrowserWindow,
   ipcMain,
   Menu,
-  nativeImage,
   screen,
   Tray
 } from 'electron'
 import { join } from 'path'
+import { resolveAppIcon, resolveTrayIcon } from './icons'
 import { transformBackendProductCodes } from './services/amazon/normalize'
 import { closeDb } from './services/db'
 import { JobQueue } from './services/job-queue'
@@ -82,6 +82,7 @@ function createWindow(): void {
   config.windowX = x
   config.windowY = y
 
+  const appIcon = resolveAppIcon()
   mainWindow = new BrowserWindow({
     width: WINDOW_WIDTH,
     height: WINDOW_HEIGHT,
@@ -97,6 +98,7 @@ function createWindow(): void {
     alwaysOnTop: config.alwaysOnTop,
     show: false,
     backgroundColor: '#00000000',
+    ...(appIcon.isEmpty() ? {} : { icon: appIcon }),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,
@@ -263,23 +265,6 @@ function showAppContextMenu(): void {
     }
   ])
   menu.popup({ window: mainWindow })
-}
-
-function resolveTrayIcon(): Electron.NativeImage {
-  const candidates = [
-    join(process.resourcesPath, 'tray.png'),
-    join(app.getAppPath(), 'resources', 'tray.png'),
-    join(__dirname, '../../resources/tray.png')
-  ]
-  for (const path of candidates) {
-    const image = nativeImage.createFromPath(path)
-    if (!image.isEmpty()) {
-      return image.resize({ width: 18, height: 18 })
-    }
-  }
-  return nativeImage.createFromDataURL(
-    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAFUlEQVQ4T2NkYGD4z0ABYBzVMKoBAAgwAgE1r1iSAAAAAElFTkSuQmCC'
-  )
 }
 
 function createTray(): void {
@@ -458,10 +443,19 @@ function wireBusinessEvents(): void {
   })
 }
 
+if (process.platform === 'win32') {
+  app.setAppUserModelId('com.kirineko.desktoppet')
+}
+
 app.whenReady().then(() => {
   config = loadConfig()
   // 启动时强制可见，清掉上次「隐藏」导致的无法恢复状态
   config.visible = true
+
+  const appIcon = resolveAppIcon()
+  if (!appIcon.isEmpty() && process.platform === 'darwin') {
+    app.dock?.setIcon(appIcon)
+  }
 
   registerIpc()
   createWindow()
