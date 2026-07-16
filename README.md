@@ -69,10 +69,11 @@ git push origin v0.1.0
 
 | 变量 | 默认 | 说明 |
 |------|------|------|
-| `AMAZON_REQUEST_INTERVAL` | `1.8` | 请求间隔（秒） |
-| `AMAZON_REQUEST_JITTER` | `0.8` | 间隔抖动（秒） |
+| `AMAZON_REQUEST_INTERVAL` | `3.0` | 请求间隔（秒） |
+| `AMAZON_REQUEST_JITTER` | `1.2` | 间隔抖动（秒） |
 | `AMAZON_MAX_RETRIES` | `3` | 重试次数 |
-Amazon JP 请求通过 Electron `net.fetch`（Chromium 网络栈）发出，会自动使用系统代理 / PAC（与浏览器一致）。请确保系统已开启可用的代理后再访问 Amazon JP。
+
+Amazon JP 库存查询通过隐藏 Chromium 窗口做真实页面导航（Cookie / UA / 系统代理与浏览器一致）。请确保系统已开启可用的代理后再访问 Amazon JP。
 
 ## License
 

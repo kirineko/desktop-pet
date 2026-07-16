@@ -8,6 +8,7 @@ import {
 } from 'electron'
 import { join } from 'path'
 import { resolveAppIcon, resolveTrayIcon } from './icons'
+import { disposeAmazonBrowser } from './services/amazon/browser'
 import { transformBackendProductCodes } from './services/amazon/normalize'
 import { closeDb } from './services/db'
 import { JobQueue } from './services/job-queue'
@@ -479,6 +480,7 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit', () => {
   dataSource.stop()
+  disposeAmazonBrowser()
   closeDb()
   if (mainWindow) {
     const [x, y] = mainWindow.getPosition()
