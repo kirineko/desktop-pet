@@ -16,8 +16,8 @@
     "preview": "electron-vite preview",
     "rebuild:native": "electron-builder install-app-deps",
     "postinstall": "electron-builder install-app-deps || true",
-    "build:mac": "npm run build && electron-builder --mac",
-    "build:win": "npm run build && electron-builder --win",
+    "build:mac": "npm run build && electron-builder --mac --publish never",
+    "build:win": "npm run build && electron-builder --win --publish never",
     "build:unpack": "npm run build && electron-builder --dir"
   },
   "devDependencies": {
