@@ -30,8 +30,8 @@
 需要 Node.js 18+。
 
 ```bash
-npm install
-npm run rebuild:native   # better-sqlite3 适配 Electron
+npm install               # postinstall 会按 Electron ABI 重建原生模块
+npm run rebuild:native   # 手动重建 better-sqlite3（可选）
 npm run dev
 ```
 

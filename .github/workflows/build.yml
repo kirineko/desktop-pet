@@ -41,8 +41,13 @@ jobs:
           node-version: 20
           cache: npm
 
+      # better-sqlite3 在 Node 20 上可能无预编译包；跳过原生安装脚本，
+      # 再按 Electron ABI 重建，避免 npm ci 阶段为 Node 编译失败。
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
+
+      - name: Rebuild native modules for Electron
+        run: npx electron-builder install-app-deps
 
       - name: Test
         run: npm test

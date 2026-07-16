@@ -14,8 +14,8 @@
     "build": "electron-vite build",
     "test": "vitest run",
     "preview": "electron-vite preview",
-    "rebuild:native": "electron-rebuild -f -w better-sqlite3",
-    "postinstall": "electron-rebuild -f -w better-sqlite3 || true",
+    "rebuild:native": "electron-builder install-app-deps",
+    "postinstall": "electron-builder install-app-deps || true",
     "build:mac": "npm run build && electron-builder --mac",
     "build:win": "npm run build && electron-builder --win",
     "build:unpack": "npm run build && electron-builder --dir"
