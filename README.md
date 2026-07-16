@@ -27,7 +27,7 @@
 
 ## 开发
 
-需要 Node.js 18+。
+需要 Node.js 18+（CI 使用 Node.js 24）。
 
 ```bash
 npm install               # postinstall 会按 Electron ABI 重建原生模块
