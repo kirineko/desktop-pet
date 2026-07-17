@@ -51,8 +51,25 @@ export function getDb(): Database.Database {
     CREATE INDEX IF NOT EXISTS idx_items_job ON items(job_id, seq);
     CREATE INDEX IF NOT EXISTS idx_items_job_status ON items(job_id, status);
   `)
+  ensureJobColumns(db)
   ensureItemColumns(db)
   return db
+}
+
+function ensureJobColumns(database: Database.Database): void {
+  const cols = new Set(
+    (
+      database.prepare(`PRAGMA table_info(jobs)`).all() as Array<{ name: string }>
+    ).map((c) => c.name)
+  )
+  if (!cols.has('started_at')) {
+    database.exec(`ALTER TABLE jobs ADD COLUMN started_at INTEGER`)
+    // 历史任务无排队概念：用 created_at 回填，避免完成任务耗时变成 0。
+    database.exec(
+      `UPDATE jobs SET started_at = created_at
+       WHERE started_at IS NULL AND status != 'pending'`
+    )
+  }
 }
 
 function ensureItemColumns(database: Database.Database): void {
@@ -85,6 +102,7 @@ function rowToJob(row: Record<string, unknown>): JobRecord {
     inStockCount: Number(row.in_stock_count),
     outOfStockCount: Number(row.out_of_stock_count),
     failedCount: Number(row.failed_count),
+    startedAt: row.started_at == null ? null : Number(row.started_at),
     createdAt: Number(row.created_at),
     updatedAt: Number(row.updated_at)
   }
@@ -165,21 +183,65 @@ export function listJobs(limit = 20): JobRecord[] {
   return rows.map(rowToJob)
 }
 
-export function getActiveJob(): JobRecord | null {
+/** 当前占用调度器的任务：优先 running，其次 paused（paused 会阻塞队列）。 */
+export function getCurrentJob(): JobRecord | null {
   const row = getDb()
     .prepare(
       `SELECT * FROM jobs
-       WHERE status IN ('pending', 'running', 'paused')
-       ORDER BY created_at DESC LIMIT 1`
+       WHERE status IN ('running', 'paused')
+       ORDER BY CASE status WHEN 'running' THEN 0 WHEN 'paused' THEN 1 END,
+                created_at ASC, id ASC
+       LIMIT 1`
     )
     .get() as Record<string, unknown> | undefined
   return row ? rowToJob(row) : null
 }
 
+/** FIFO：按创建时间取最早的等待任务。 */
+export function getNextPendingJob(): JobRecord | null {
+  const row = getDb()
+    .prepare(
+      `SELECT * FROM jobs
+       WHERE status = 'pending'
+       ORDER BY created_at ASC, id ASC
+       LIMIT 1`
+    )
+    .get() as Record<string, unknown> | undefined
+  return row ? rowToJob(row) : null
+}
+
+/** 侧边栏/托盘用的「活跃」任务：当前 running/paused，否则最早 pending。 */
+export function getActiveJob(): JobRecord | null {
+  return getCurrentJob() ?? getNextPendingJob()
+}
+
+/** 将异常退出遗留的 running 重置为 pending，返回影响行数。paused 保持不变。 */
+export function recoverInterruptedJobs(): number {
+  const result = getDb()
+    .prepare(
+      `UPDATE jobs SET status = 'pending', updated_at = ?
+       WHERE status = 'running'`
+    )
+    .run(Date.now())
+  return result.changes
+}
+
 export function updateJobStatus(id: string, status: JobRunStatus): void {
+  const now = Date.now()
+  if (status === 'running') {
+    // 首次进入 running 时写入 started_at，之后恢复执行不重置（不含排队等待）。
+    getDb()
+      .prepare(
+        `UPDATE jobs SET status = ?, updated_at = ?,
+          started_at = COALESCE(started_at, ?)
+         WHERE id = ?`
+      )
+      .run(status, now, now, id)
+    return
+  }
   getDb()
     .prepare('UPDATE jobs SET status = ?, updated_at = ? WHERE id = ?')
-    .run(status, Date.now(), id)
+    .run(status, now, id)
 }
 
 export function getNextPendingItem(

@@ -41,6 +41,7 @@ describe('session summary', () => {
           inStockCount: 2,
           outOfStockCount: 1,
           failedCount: 1,
+          startedAt: 1,
           createdAt: 1,
           updatedAt: 2
         }
@@ -55,6 +56,7 @@ describe('session summary', () => {
         inStockCount: 1,
         outOfStockCount: 0,
         failedCount: 0,
+        startedAt: 3,
         createdAt: 3,
         updatedAt: 4
       }
@@ -85,6 +87,7 @@ describe('session summary', () => {
       inStockCount: 1,
       outOfStockCount: 0,
       failedCount: 0,
+      startedAt: 1,
       createdAt: 1,
       updatedAt: 1
     })

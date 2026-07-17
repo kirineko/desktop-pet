@@ -67,6 +67,8 @@ export interface JobRecord {
   inStockCount: number
   outOfStockCount: number
   failedCount: number
+  /** 首次进入 running 的时间；排队中尚未开始时为 null */
+  startedAt: number | null
   createdAt: number
   updatedAt: number
 }
@@ -231,6 +233,13 @@ export function jobToStatus(job: JobRecord | null): JobStatus {
   }
 }
 
+/** 执行耗时：从首次开始查询起算，不含排队等待。 */
+export function jobElapsedMs(job: JobRecord, now = Date.now()): number {
+  if (job.startedAt == null) return 0
+  const end = job.status === 'running' ? now : job.updatedAt
+  return Math.max(0, end - job.startedAt)
+}
+
 /** preload 暴露给渲染进程的 API */
 export interface DesktopPetApi {
   getConfig: () => Promise<PetConfig>
@@ -245,9 +254,9 @@ export interface DesktopPetApi {
   getJobStatus: () => Promise<JobStatus>
   getSessionSummary: () => Promise<SessionSummary>
   createJob: (input: CreateJobInput) => Promise<CreateJobResult>
-  pauseJob: () => Promise<JobRecord | null>
-  resumeJob: () => Promise<JobRecord | null>
-  cancelJob: () => Promise<JobRecord | null>
+  pauseJob: (jobId: string) => Promise<JobRecord | null>
+  resumeJob: (jobId: string) => Promise<JobRecord | null>
+  cancelJob: (jobId: string) => Promise<JobRecord | null>
   deleteJob: (jobId: string) => Promise<{ ok: boolean }>
   getActiveJob: () => Promise<JobRecord | null>
   listJobs: (limit?: number) => Promise<JobRecord[]>

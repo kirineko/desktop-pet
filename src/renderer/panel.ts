@@ -9,7 +9,8 @@ import type {
 import {
   JOB_STATUS_LABELS,
   RESULT_MODE_LABELS,
-  SEARCH_MODE_LABELS
+  SEARCH_MODE_LABELS,
+  jobElapsedMs
 } from '../shared/types'
 
 const MODE_HINTS: Record<SearchMode, string> = {
@@ -117,12 +118,6 @@ function formatDuration(ms: number): string {
   const ss = total % 60
   const pad = (n: number): string => String(n).padStart(2, '0')
   return hh > 0 ? `${hh}:${pad(mm)}:${pad(ss)}` : `${pad(mm)}:${pad(ss)}`
-}
-
-/** 执行时长：运行中实时累计，其余状态取最后更新时间。 */
-function jobElapsedMs(job: JobRecord): number {
-  const end = job.status === 'running' ? Date.now() : job.updatedAt
-  return Math.max(0, end - job.createdAt)
 }
 
 async function flash(btn: HTMLButtonElement, label: string): Promise<void> {
@@ -485,14 +480,17 @@ function bindEvents(): void {
   })
 
   els.btnPause.addEventListener('click', () => {
-    void window.desktopPet.pauseJob()
+    if (!selectedJobId) return
+    void window.desktopPet.pauseJob(selectedJobId)
   })
   els.btnResume.addEventListener('click', () => {
-    void window.desktopPet.resumeJob()
+    if (!selectedJobId) return
+    void window.desktopPet.resumeJob(selectedJobId)
   })
   els.btnCancel.addEventListener('click', () => {
+    if (!selectedJobId) return
     if (!window.confirm('确定取消当前查询吗？已完成的结果会保留。')) return
-    void window.desktopPet.cancelJob()
+    void window.desktopPet.cancelJob(selectedJobId)
   })
 
   els.taskList.addEventListener('click', (e) => {
@@ -614,7 +612,10 @@ async function bootstrap(): Promise<void> {
   bindEvents()
   window.setInterval(tickElapsed, 1000)
   await refreshSidebar()
-  const active = cachedJobs.find((job) => isActive(job.status))
+  const active =
+    cachedJobs.find((job) => job.status === 'running') ||
+    cachedJobs.find((job) => job.status === 'paused') ||
+    cachedJobs.find((job) => job.status === 'pending')
   if (active) {
     await selectJob(active.id)
   } else {

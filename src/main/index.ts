@@ -217,13 +217,13 @@ function jobControlMenuItems(): Electron.MenuItemConstructorOptions[] {
   if (active.status === 'running') {
     items.push({
       label: '暂停查询',
-      click: () => jobQueue.pauseJob()
+      click: () => jobQueue.pauseJob(active.id)
     })
   }
   if (active.status === 'paused') {
     items.push({
       label: '继续查询',
-      click: () => jobQueue.resumeJob()
+      click: () => jobQueue.resumeJob(active.id)
     })
   }
   if (
@@ -233,7 +233,7 @@ function jobControlMenuItems(): Electron.MenuItemConstructorOptions[] {
   ) {
     items.push({
       label: '取消查询',
-      click: () => jobQueue.cancelJob()
+      click: () => jobQueue.cancelJob(active.id)
     })
   }
   return items
@@ -379,20 +379,20 @@ function registerIpc(): void {
     return result
   })
 
-  ipcMain.handle('pause-job', () => {
-    const job = jobQueue.pauseJob()
+  ipcMain.handle('pause-job', (_event, jobId: string) => {
+    const job = jobQueue.pauseJob(jobId)
     rebuildTrayMenu()
     return job
   })
 
-  ipcMain.handle('resume-job', () => {
-    const job = jobQueue.resumeJob()
+  ipcMain.handle('resume-job', (_event, jobId: string) => {
+    const job = jobQueue.resumeJob(jobId)
     rebuildTrayMenu()
     return job
   })
 
-  ipcMain.handle('cancel-job', () => {
-    const job = jobQueue.cancelJob()
+  ipcMain.handle('cancel-job', (_event, jobId: string) => {
+    const job = jobQueue.cancelJob(jobId)
     rebuildTrayMenu()
     return job
   })
@@ -473,6 +473,7 @@ app.whenReady().then(() => {
   createWindow()
   createTray()
   wireBusinessEvents()
+  jobQueue.recoverAndStart()
   syncDockForVisibility()
 
   app.on('activate', () => {
