@@ -19,5 +19,7 @@ describe('native ABI workflow', () => {
     const runner = readFileSync(join(root, 'scripts/test.mjs'), 'utf8')
     expect(runner).toContain('finally')
     expect(runner).toContain('rebuild:native')
+    expect(runner).toContain('npm_execpath')
+    expect(runner).toMatch(/shell:\s*process\.platform === ['"]win32['"]/)
   })
 })
