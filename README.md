@@ -62,16 +62,16 @@ npm run build:win   # Windows → dist/*.exe
 
 ## CI 打包（GitHub Actions）
 
-推送到 `main`、打 `v*` 标签，或手动触发 workflow，会在：
+打 `v*` 标签，或手动触发 workflow，会在：
 
 - **macOS**：产出 `.dmg` / `.zip`
 - **Windows**：产出 NSIS / portable `.exe`
 
-产物上传为 Actions Artifact；打 `v*` 标签时会自动创建 GitHub Release 并附带安装包。
+产物上传为 Actions Artifact；打 `v*` 标签时会自动创建 GitHub Release 并附带安装包。`push` 到 `main` 不会触发构建。
 
 ```bash
-git tag v0.2.0
-git push origin v0.2.0
+git tag v1.0.0
+git push origin v1.0.0
 ```
 
 ## 环境变量（可选）
