@@ -1,0 +1,1342 @@
+:root {
+  --cream: #fffaf3;
+  --paper: #fff8f1;
+  --paper-deep: #f3e6d8;
+  --ink: #2a211c;
+  --muted: #7a6a5c;
+  --line: #e4d2bf;
+  --line-strong: #c9ad93;
+  --card: #fffdf9;
+  --accent: #c45c6a;
+  --accent-soft: #ffe4e8;
+  --ok: #2f7d4a;
+  --danger: #b42318;
+  --shadow: 0 12px 28px rgba(61, 36, 24, 0.12);
+  --pixel: 3px;
+  font-family: "Songti SC", "PingFang SC", "Hiragino Mincho ProN", serif;
+}
+
+body[data-pet='feibi'] {
+  --accent: #d97706;
+  --accent-soft: #ffedd5;
+}
+
+body[data-pet='guga'] {
+  --accent: #2563eb;
+  --accent-soft: #dbeafe;
+}
+
+body[data-pet='doro'] {
+  --accent: #c45c6a;
+  --accent-soft: #ffe4e8;
+}
+
+body[data-pet='nuonuo'] {
+  --accent: #7c3aed;
+  --accent-soft: #ede9fe;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.55), transparent 40%),
+    linear-gradient(180deg, var(--paper) 0%, var(--paper-deep) 100%);
+  color: var(--ink);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 80;
+  padding: 8px 12px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 8px;
+  transform: translateY(-160%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.chat-app {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  height: 100vh;
+}
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  border-right: var(--pixel) solid var(--line-strong);
+  background: rgba(255, 252, 246, 0.92);
+  backdrop-filter: blur(6px);
+}
+
+.rail-head {
+  padding: 18px 16px 10px;
+}
+
+.rail-title {
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.rail-pet {
+  margin-top: 4px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.rail-actions {
+  padding: 0 12px 12px;
+}
+
+.conversation-list {
+  flex: 1;
+  overflow: auto;
+  padding: 0 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.conversation-item {
+  appearance: none;
+  width: 100%;
+  text-align: left;
+  border: var(--pixel) solid transparent;
+  background: transparent;
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
+.conversation-item:hover {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: var(--line);
+}
+
+.conversation-item.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  box-shadow: 0 var(--pixel) 0 var(--accent);
+}
+
+.conversation-item .title {
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.conversation-item .preview {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rail-foot {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  padding: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.stage {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.view {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.stage-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px 8px;
+}
+
+.portrait-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.72);
+  border: var(--pixel) solid var(--line-strong);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+
+.portrait-image {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.12));
+}
+
+.portrait-name {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.portrait-status {
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.banner-tools {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dialogue-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 8px 20px 12px;
+}
+
+.empty-state {
+  margin: 40px auto;
+  max-width: 360px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.message-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: 8px;
+}
+
+.message {
+  max-width: min(720px, 92%);
+  padding: 12px 14px;
+  border: var(--pixel) solid var(--line-strong);
+  border-radius: 16px;
+  background: var(--card);
+  box-shadow: 0 var(--pixel) 0 rgba(42, 33, 28, 0.08);
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.55;
+  font-size: 15px;
+  animation: message-in 0.18s ease-out;
+}
+
+.message.user {
+  align-self: flex-end;
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.message.assistant {
+  align-self: flex-start;
+}
+
+.message.error {
+  border-color: var(--danger);
+  background: #fff1f0;
+}
+
+.message .meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.message .retry {
+  margin-top: 8px;
+}
+
+.composer {
+  padding: 12px 20px 18px;
+  border-top: var(--pixel) solid var(--line);
+  background: rgba(255, 252, 246, 0.88);
+}
+
+.composer-input {
+  width: 100%;
+  resize: vertical;
+  min-height: 64px;
+  max-height: 180px;
+  padding: 12px 14px;
+  border: var(--pixel) solid var(--line-strong);
+  border-radius: 14px;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.composer-input:focus,
+.persona-form input:focus,
+.persona-form select:focus,
+.persona-form textarea:focus,
+.settings-form input:focus {
+  outline: 3px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+
+.composer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.composer-hint {
+  margin-right: auto;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.btn {
+  appearance: none;
+  border: var(--pixel) solid var(--line-strong);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 12px;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 var(--pixel) 0 rgba(42, 33, 28, 0.12);
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn.primary {
+  background: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 70%, #000);
+  color: #fff;
+}
+
+.btn.ghost {
+  background: transparent;
+  box-shadow: none;
+}
+
+.btn.danger-ghost {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 45%, var(--line));
+  background: transparent;
+  box-shadow: none;
+}
+
+.rail-foot .btn.ghost.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.panel-head {
+  padding: 28px 28px 8px;
+}
+
+.panel-head h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.panel-head p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+  max-width: 560px;
+}
+
+.persona-form,
+.settings-form {
+  padding: 12px 28px 28px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  max-width: 760px;
+}
+
+.persona-form label,
+.settings-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.persona-form label.full,
+.settings-form label.full {
+  grid-column: 1 / -1;
+}
+
+.persona-form input,
+.persona-form select,
+.persona-form textarea,
+.settings-form input {
+  border: var(--pixel) solid var(--line-strong);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font: inherit;
+  color: var(--ink);
+  background: #fff;
+}
+
+.form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.form-actions.wrap {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.form-status {
+  min-height: 1.2em;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.form-status.ok {
+  color: var(--ok);
+}
+
+.form-status.err {
+  color: var(--danger);
+}
+
+.key-status {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.key-row {
+  display: flex;
+  gap: 8px;
+}
+
+.key-row input {
+  flex: 1;
+}
+
+@keyframes message-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 860px) {
+  .chat-app {
+    grid-template-columns: 200px 1fr;
+  }
+
+  .persona-form,
+  .settings-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .message,
+  .btn {
+    animation: none;
+    transition: none;
+  }
+
+  .btn:hover {
+    transform: none;
+  }
+}
+
+/* ---------- kawaii diary theme ---------- */
+:root {
+  --cream: #fffaf3;
+  --strawberry: #e86f88;
+  --cocoa: #62483d;
+  --milk: rgba(255, 255, 255, 0.82);
+  --diary-shadow:
+    0 18px 40px rgba(116, 72, 66, 0.13),
+    0 3px 0 rgba(138, 91, 76, 0.09);
+}
+
+body {
+  background:
+    radial-gradient(circle at 14% 12%, rgba(255, 255, 255, 0.95) 0 4px, transparent 5px),
+    radial-gradient(circle at 86% 18%, color-mix(in srgb, var(--accent) 16%, transparent) 0 5px, transparent 6px),
+    radial-gradient(circle at 78% 82%, rgba(255, 255, 255, 0.75) 0 3px, transparent 4px),
+    linear-gradient(135deg, #fffdf9 0%, var(--accent-soft) 50%, #fff4e9 100%);
+  background-size: 72px 72px, 96px 96px, 64px 64px, auto;
+  color: var(--cocoa);
+}
+
+.kawaii-sprinkles {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  color: color-mix(in srgb, var(--accent) 48%, white);
+}
+
+.kawaii-sprinkles span {
+  position: absolute;
+  font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.8);
+  animation: sprinkle-float 4.8s ease-in-out infinite;
+}
+
+.kawaii-sprinkles span:nth-child(1) {
+  top: 5%;
+  left: 26%;
+  font-size: 22px;
+}
+
+.kawaii-sprinkles span:nth-child(2) {
+  top: 9%;
+  right: 4%;
+  font-size: 28px;
+  animation-delay: -1.2s;
+}
+
+.kawaii-sprinkles span:nth-child(3) {
+  bottom: 8%;
+  left: 22%;
+  font-size: 42px;
+  animation-delay: -2.6s;
+}
+
+.kawaii-sprinkles span:nth-child(4) {
+  bottom: 4%;
+  right: 3%;
+  font-size: 28px;
+  animation-delay: -0.8s;
+}
+
+.kawaii-sprinkles span:nth-child(5) {
+  top: 47%;
+  right: 2%;
+  font-size: 20px;
+  animation-delay: -3.1s;
+}
+
+.chat-app {
+  position: relative;
+  z-index: 1;
+  grid-template-columns: 248px minmax(0, 1fr);
+  gap: 14px;
+  padding: 14px;
+}
+
+.rail {
+  position: relative;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 26px;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.72), rgba(255, 251, 246, 0.88)),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 25px,
+      color-mix(in srgb, var(--accent) 11%, transparent) 26px 27px
+    );
+  box-shadow: var(--diary-shadow);
+  backdrop-filter: blur(14px);
+}
+
+.rail::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 14px;
+  width: 2px;
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  pointer-events: none;
+}
+
+.rail-head {
+  position: relative;
+  padding: 28px 20px 14px 30px;
+  text-align: center;
+}
+
+.rail-ribbon {
+  position: absolute;
+  top: 9px;
+  right: 14px;
+  padding: 3px 12px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--accent-soft) 70%, white);
+  color: color-mix(in srgb, var(--accent) 75%, var(--cocoa));
+  font-family: "Avenir Next", "Hiragino Maru Gothic ProN", sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  transform: rotate(4deg);
+  box-shadow: 0 1px 3px rgba(98, 72, 61, 0.12);
+}
+
+.rail-title {
+  color: var(--accent);
+  font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: none;
+}
+
+.rail-pet {
+  margin-top: 8px;
+  color: var(--cocoa);
+  font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+  font-size: 27px;
+  letter-spacing: 0.04em;
+  text-shadow: 0 3px 0 #fff;
+}
+
+.rail-companion {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.rail-companion span {
+  color: var(--accent);
+}
+
+.rail-actions {
+  padding: 0 18px 14px 28px;
+}
+
+.rail-actions .btn {
+  width: 100%;
+}
+
+.conversation-list {
+  padding: 2px 14px 14px 26px;
+  gap: 10px;
+}
+
+.conversation-item {
+  position: relative;
+  border: 2px solid rgba(255, 255, 255, 0.88);
+  border-radius: 16px 18px 15px 18px;
+  padding: 11px 12px 10px;
+  background: rgba(255, 255, 255, 0.62);
+  box-shadow: 0 4px 10px rgba(110, 75, 65, 0.07);
+  transform: rotate(-0.25deg);
+}
+
+.conversation-item:nth-child(even) {
+  transform: rotate(0.35deg);
+}
+
+.conversation-item::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  width: 38px;
+  height: 9px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--accent-soft) 72%, white);
+  opacity: 0;
+  transform: translateX(-50%) rotate(-2deg);
+}
+
+.conversation-item:hover,
+.conversation-item.active {
+  transform: translateY(-2px) rotate(0);
+}
+
+.conversation-item.active {
+  border-color: color-mix(in srgb, var(--accent) 62%, white);
+  background: color-mix(in srgb, var(--accent-soft) 58%, white);
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.conversation-item.active::before {
+  opacity: 0.92;
+}
+
+.conversation-item .title {
+  font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+}
+
+.rail-foot {
+  gap: 5px;
+  padding: 11px 12px 13px 22px;
+  border-top: 1px dashed color-mix(in srgb, var(--accent) 30%, var(--line));
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.rail-foot .btn {
+  padding: 7px 3px;
+  border-color: transparent;
+  border-radius: 999px;
+  font-size: 11px;
+}
+
+.stage {
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 30px;
+  background:
+    linear-gradient(rgba(255, 253, 250, 0.9), rgba(255, 249, 243, 0.92)),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 31px,
+      color-mix(in srgb, var(--accent) 8%, transparent) 32px 33px
+    );
+  box-shadow: var(--diary-shadow);
+  backdrop-filter: blur(12px);
+}
+
+.stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 96% 6%, color-mix(in srgb, var(--accent-soft) 64%, transparent) 0 72px, transparent 73px),
+    radial-gradient(circle at 2% 94%, color-mix(in srgb, var(--accent-soft) 44%, transparent) 0 54px, transparent 55px);
+}
+
+.view {
+  position: relative;
+  z-index: 1;
+}
+
+.view-persona,
+.view-settings {
+  overflow: auto;
+}
+
+.stage-banner {
+  padding: 18px 22px 10px;
+}
+
+.portrait-card {
+  position: relative;
+  min-width: 290px;
+  padding: 11px 20px 11px 12px;
+  border: 2px solid color-mix(in srgb, var(--accent) 32%, white);
+  border-radius: 22px 24px 20px 24px;
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: 0 9px 22px rgba(104, 69, 58, 0.1);
+  transform: rotate(-0.35deg);
+}
+
+.portrait-tape {
+  position: absolute;
+  top: -8px;
+  right: 25px;
+  width: 58px;
+  height: 14px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--accent-soft) 68%, #fff6c7);
+  opacity: 0.9;
+  transform: rotate(3deg);
+}
+
+.portrait-image {
+  width: 86px;
+  height: 86px;
+  animation: portrait-bob 3s ease-in-out infinite;
+}
+
+.portrait-name {
+  color: var(--accent);
+  font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+  font-size: 25px;
+  text-shadow: 0 2px 0 #fff;
+}
+
+.portrait-status {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 3px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: color-mix(in srgb, var(--accent) 72%, var(--cocoa));
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.portrait-status::before {
+  content: "●";
+  margin-right: 5px;
+  color: #6ebf8b;
+  font-size: 8px;
+}
+
+.companion-copy {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.dialogue-scroll {
+  margin: 0 8px;
+  padding: 12px 20px 18px;
+  scrollbar-color: color-mix(in srgb, var(--accent) 30%, transparent) transparent;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  margin: 60px auto;
+  padding: 24px 30px;
+  border: 2px dashed color-mix(in srgb, var(--accent) 30%, var(--line));
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.52);
+  transform: rotate(-0.5deg);
+}
+
+.empty-state strong {
+  color: var(--cocoa);
+  font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+  font-size: 17px;
+}
+
+.empty-state span:last-child {
+  font-size: 12px;
+}
+
+.empty-sticker {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50% 46% 48% 44%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 25px;
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.message-list {
+  gap: 17px;
+}
+
+.message-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 9px;
+  width: 100%;
+}
+
+.message-row.user {
+  flex-direction: row-reverse;
+}
+
+.message-avatar {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  box-shadow:
+    0 4px 10px rgba(98, 72, 61, 0.14),
+    0 0 0 2px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.assistant-avatar {
+  object-fit: contain;
+  padding: 2px;
+  background: color-mix(in srgb, var(--accent-soft) 62%, white);
+  image-rendering: pixelated;
+}
+
+.user-avatar {
+  display: grid;
+  place-items: center;
+  background: linear-gradient(145deg, #fff, var(--accent-soft));
+  color: color-mix(in srgb, var(--accent) 72%, var(--cocoa));
+  font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.message {
+  position: relative;
+  border-width: 2px;
+  border-radius: 20px 22px 20px 8px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 7px 16px rgba(98, 72, 61, 0.08),
+    0 2px 0 rgba(98, 72, 61, 0.07);
+}
+
+.message.assistant {
+  margin-left: 0;
+  border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
+}
+
+.message.assistant::before {
+  content: none;
+}
+
+.message.user {
+  border-color: color-mix(in srgb, var(--accent) 48%, white);
+  border-radius: 22px 22px 8px 22px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.3), transparent),
+    var(--accent-soft);
+}
+
+.message .meta {
+  color: color-mix(in srgb, var(--accent) 54%, var(--muted));
+  font-weight: 700;
+}
+
+.message .content > :first-child {
+  margin-top: 0;
+}
+
+.message .content > :last-child {
+  margin-bottom: 0;
+}
+
+.message .content p {
+  margin: 0.45em 0;
+}
+
+.message .content h1,
+.message .content h2,
+.message .content h3,
+.message .content h4 {
+  margin: 0.75em 0 0.35em;
+  color: color-mix(in srgb, var(--accent) 58%, var(--cocoa));
+  font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+  line-height: 1.3;
+}
+
+.message .content h1 {
+  font-size: 1.24em;
+}
+
+.message .content h2 {
+  font-size: 1.17em;
+}
+
+.message .content h3,
+.message .content h4 {
+  font-size: 1.08em;
+}
+
+.message .content ul,
+.message .content ol {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+.message .content li + li {
+  margin-top: 0.25em;
+}
+
+.message .content blockquote {
+  margin: 0.65em 0;
+  padding: 0.45em 0.8em;
+  border-left: 4px solid var(--accent);
+  border-radius: 0 10px 10px 0;
+  background: color-mix(in srgb, var(--accent-soft) 55%, white);
+  color: var(--muted);
+}
+
+.message .content code {
+  padding: 0.12em 0.35em;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--accent-soft) 58%, #f4eee9);
+  color: color-mix(in srgb, var(--accent) 62%, var(--cocoa));
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.9em;
+}
+
+.message .content pre {
+  max-width: 100%;
+  margin: 0.65em 0;
+  padding: 10px 12px;
+  overflow: auto;
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--line));
+  border-radius: 12px;
+  background: #fffaf7;
+}
+
+.message .content pre code {
+  padding: 0;
+  background: transparent;
+  color: var(--cocoa);
+}
+
+.message .content a {
+  color: color-mix(in srgb, var(--accent) 78%, #5b3f8c);
+  font-weight: 700;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+}
+
+.message .content table {
+  display: block;
+  max-width: 100%;
+  margin: 0.65em 0;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.message .content th,
+.message .content td {
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+}
+
+.message .content th {
+  background: var(--accent-soft);
+}
+
+.composer {
+  position: relative;
+  margin: 0 18px 16px;
+  padding: 18px 16px 13px;
+  border: 2px solid color-mix(in srgb, var(--accent) 28%, var(--line));
+  border-radius: 20px 22px 18px 21px;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.9) 0 27px,
+      color-mix(in srgb, var(--accent) 9%, white) 28px 29px
+    );
+  box-shadow: 0 8px 20px rgba(104, 69, 58, 0.1);
+}
+
+.composer-sticker {
+  position: absolute;
+  top: -10px;
+  left: 22px;
+  padding: 3px 13px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--accent-soft) 74%, #fff4bd);
+  color: color-mix(in srgb, var(--accent) 68%, var(--cocoa));
+  font-family: "Avenir Next", sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  transform: rotate(-2deg);
+}
+
+.composer-input {
+  min-height: 68px;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow: none;
+  line-height: 1.7;
+}
+
+.composer-input:focus {
+  outline: 2px dashed color-mix(in srgb, var(--accent) 42%, transparent);
+  outline-offset: 3px;
+  border-color: transparent;
+}
+
+.composer-hint {
+  opacity: 0.75;
+}
+
+.btn {
+  border-width: 2px;
+  border-radius: 999px;
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--line-strong) 65%, transparent);
+  font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease;
+}
+
+.btn.primary {
+  border-color: color-mix(in srgb, var(--accent) 76%, var(--cocoa));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 78%, white),
+    var(--accent)
+  );
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--accent) 70%, var(--cocoa));
+}
+
+.btn.primary:hover {
+  filter: saturate(1.08) brightness(1.03);
+}
+
+.panel-head {
+  margin: 26px 28px 8px;
+  padding: 24px 26px 18px;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.65);
+  box-shadow: 0 8px 20px rgba(104, 69, 58, 0.08);
+}
+
+.panel-kicker {
+  margin-bottom: 5px;
+  color: var(--accent);
+  font-family: "Avenir Next", "Hiragino Maru Gothic ProN", sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.panel-head h1 {
+  color: var(--cocoa);
+  font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+}
+
+.persona-form,
+.settings-form {
+  margin: 6px 28px 28px;
+  padding: 24px;
+  border: 2px dashed color-mix(in srgb, var(--accent) 28%, var(--line));
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.persona-form label,
+.settings-form label {
+  color: color-mix(in srgb, var(--accent) 34%, var(--muted));
+  font-weight: 700;
+}
+
+.persona-form input,
+.persona-form select,
+.persona-form textarea,
+.settings-form input {
+  border-width: 2px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.key-status {
+  border: 2px solid color-mix(in srgb, var(--accent) 40%, white);
+  background: color-mix(in srgb, var(--accent-soft) 65%, white);
+}
+
+.rename-dialog {
+  width: min(420px, calc(100vw - 32px));
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 26px;
+  background: transparent;
+  color: var(--cocoa);
+}
+
+.rename-dialog::backdrop {
+  background: rgba(82, 57, 66, 0.28);
+  backdrop-filter: blur(4px);
+}
+
+.rename-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 28px 26px 24px;
+  border: 3px solid color-mix(in srgb, var(--accent) 35%, white);
+  border-radius: 26px;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.96) 0 30px,
+      color-mix(in srgb, var(--accent) 8%, white) 31px 32px
+    );
+  box-shadow: 0 24px 60px rgba(72, 46, 52, 0.24);
+}
+
+.rename-tape {
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  padding: 4px 22px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--accent-soft) 70%, #fff2ac);
+  color: color-mix(in srgb, var(--accent) 65%, var(--cocoa));
+  font-family: "Avenir Next", sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  transform: translateX(-50%) rotate(-2deg);
+}
+
+.rename-card h2 {
+  margin: 2px 0 0;
+  color: var(--accent);
+  font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+  font-size: 22px;
+  text-align: center;
+}
+
+.rename-card p {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.rename-card label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.rename-card input {
+  width: 100%;
+  padding: 11px 13px;
+  border: 2px solid var(--line-strong);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--cocoa);
+  font: inherit;
+}
+
+.rename-card input:focus {
+  outline: 3px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  border-color: var(--accent);
+}
+
+.rename-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 8px;
+}
+
+@keyframes sprinkle-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-5deg);
+  }
+  50% {
+    transform: translateY(-7px) rotate(6deg);
+  }
+}
+
+@keyframes portrait-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(1deg);
+  }
+}
+
+@media (max-width: 860px) {
+  .chat-app {
+    grid-template-columns: 205px minmax(0, 1fr);
+    gap: 9px;
+    padding: 9px;
+  }
+
+  .portrait-card {
+    min-width: 0;
+  }
+
+  .portrait-image {
+    width: 68px;
+    height: 68px;
+  }
+
+  .companion-copy {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kawaii-sprinkles span,
+  .portrait-image {
+    animation: none;
+  }
+}

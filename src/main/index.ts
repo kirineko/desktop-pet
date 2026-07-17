@@ -9,8 +9,30 @@ import {
 } from 'electron'
 import { join } from 'path'
 import { resolveAppIcon, resolveTrayIcon } from './icons'
+import {
+  consumePendingChatOptions,
+  disposeChatWindow,
+  openChatWindow
+} from './chat'
 import { disposeAmazonBrowser } from './services/amazon/browser'
 import { transformBackendProductCodes } from './services/amazon/normalize'
+import {
+  chatClearApiKey,
+  chatCreateConversation,
+  chatDeleteConversation,
+  chatGetApiKeyStatus,
+  chatGetMessages,
+  chatGetPersonaProfile,
+  chatListConversations,
+  chatRenameConversation,
+  chatSetApiKey,
+  chatTestApiKey,
+  chatUpdatePersonaProfile,
+  disposeChatService,
+  sendChatMessage,
+  stopChatGeneration
+} from './services/chat/chat-service'
+import { closeChatDb } from './services/chat/chat-db'
 import { closeDb } from './services/db'
 import { JobQueue } from './services/job-queue'
 import { StockPetDataSource } from './services/pet-data-source'
@@ -22,9 +44,12 @@ import {
   PET_LABELS,
   type CreateJobInput,
   type ItemFilter,
+  type OpenChatOptions,
   type PetBusinessEvent,
   type PetConfig,
-  type PetId
+  type PetId,
+  type SendChatMessageInput,
+  type UpdatePersonaInput
 } from '../shared/types'
 
 const WINDOW_WIDTH = 200
@@ -243,8 +268,16 @@ function showAppContextMenu(): void {
   if (!mainWindow) return
   const menu = Menu.buildFromTemplate([
     {
+      label: '和我聊天',
+      click: () => openChatWindow({ petId: config.petId, view: 'chat' })
+    },
+    {
       label: '打开库存面板',
       click: () => openPanelWindow()
+    },
+    {
+      label: '角色设定',
+      click: () => openChatWindow({ petId: config.petId, view: 'persona' })
     },
     ...jobControlMenuItems(),
     { type: 'separator' },
@@ -302,6 +335,10 @@ function rebuildTrayMenu(): void {
     {
       label: config.visible ? '隐藏宠物' : '显示宠物',
       click: () => toggleVisible()
+    },
+    {
+      label: '和我聊天',
+      click: () => openChatWindow({ petId: config.petId, view: 'chat' })
     },
     {
       label: '打开库存面板',
@@ -363,9 +400,72 @@ function registerIpc(): void {
     openPanelWindow()
   })
 
+  ipcMain.handle('open-chat', (_event, options?: OpenChatOptions) => {
+    openChatWindow({
+      petId: options?.petId ?? config.petId,
+      view: options?.view ?? 'chat',
+      conversationId: options?.conversationId
+    })
+  })
+
+  ipcMain.handle('get-chat-open-options', () => consumePendingChatOptions())
+
   ipcMain.handle('show-pet', () => {
     showPet()
   })
+
+  ipcMain.handle('get-api-key-status', () => chatGetApiKeyStatus())
+
+  ipcMain.handle('set-api-key', (_event, apiKey: string) =>
+    chatSetApiKey(apiKey)
+  )
+
+  ipcMain.handle('clear-api-key', () => chatClearApiKey())
+
+  ipcMain.handle('test-api-key', (_event, apiKey?: string) =>
+    chatTestApiKey(apiKey)
+  )
+
+  ipcMain.handle('get-persona-profile', (_event, petId: PetId) =>
+    chatGetPersonaProfile(petId)
+  )
+
+  ipcMain.handle('update-persona-profile', (_event, input: UpdatePersonaInput) =>
+    chatUpdatePersonaProfile(input.petId, input.fields)
+  )
+
+  ipcMain.handle('list-conversations', (_event, petId: PetId) =>
+    chatListConversations(petId)
+  )
+
+  ipcMain.handle(
+    'create-conversation',
+    (_event, petId: PetId, title?: string) =>
+      chatCreateConversation(petId, title)
+  )
+
+  ipcMain.handle(
+    'rename-conversation',
+    (_event, conversationId: string, title: string) =>
+      chatRenameConversation(conversationId, title)
+  )
+
+  ipcMain.handle('delete-conversation', (_event, conversationId: string) =>
+    chatDeleteConversation(conversationId)
+  )
+
+  ipcMain.handle(
+    'get-conversation-messages',
+    (_event, conversationId: string) => chatGetMessages(conversationId)
+  )
+
+  ipcMain.handle('send-chat-message', (_event, input: SendChatMessageInput) =>
+    sendChatMessage(input)
+  )
+
+  ipcMain.handle('stop-chat-generation', (_event, conversationId?: string) =>
+    stopChatGeneration(conversationId)
+  )
 
   ipcMain.handle('get-network-status', () => jobQueue.getNetworkStatus())
 
@@ -492,7 +592,10 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit', () => {
   dataSource.stop()
+  disposeChatService()
+  disposeChatWindow()
   disposeAmazonBrowser()
+  closeChatDb()
   closeDb()
   if (mainWindow) {
     const [x, y] = mainWindow.getPosition()

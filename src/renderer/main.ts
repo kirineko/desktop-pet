@@ -1,5 +1,6 @@
 import './style.css'
 import { Bubble } from './bubble'
+import { startIdleBubbleScheduler } from './idle-bubble-scheduler'
 import { PetController } from './pet'
 import { SessionHud } from './session-hud'
 import type { PetConfig, PetId, SessionSummary } from '../shared/types'
@@ -83,6 +84,17 @@ async function bootstrap(): Promise<void> {
     const lines = welcomeLines[config.petId]
     pet.say(lines[Math.floor(Math.random() * lines.length)])
   }
+
+  const stopIdleBubbleScheduler = startIdleBubbleScheduler({
+    canShow: () =>
+      document.visibilityState === 'visible' && pet.canShowRandomIdleLine(),
+    show: () => {
+      pet.showRandomIdleLine()
+    }
+  })
+  window.addEventListener('beforeunload', stopIdleBubbleScheduler, {
+    once: true
+  })
 }
 
 void bootstrap()

@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>桌宠对话</title>
+  </head>
+  <body data-pet="doro">
+    <a class="skip-link" href="#chat-main">跳到对话</a>
+    <div class="kawaii-sprinkles" aria-hidden="true">
+      <span>✦</span><span>♡</span><span>·</span><span>✿</span><span>✧</span>
+    </div>
+    <div class="chat-app" id="chat-app">
+      <aside class="rail" aria-label="会话与导航">
+        <header class="rail-head">
+          <div class="rail-ribbon" aria-hidden="true">MY PET</div>
+          <div class="rail-title">✦ 陪伴日记 ✦</div>
+          <div class="rail-pet" id="rail-pet-name">Doro</div>
+          <div class="rail-companion"><span aria-hidden="true">♡</span> 今天也陪着你</div>
+        </header>
+        <div class="rail-actions">
+          <button type="button" class="btn primary" id="btn-new-chat">＋ 写新一页</button>
+        </div>
+        <nav class="conversation-list" id="conversation-list" aria-label="历史会话"></nav>
+        <footer class="rail-foot">
+          <button type="button" class="btn ghost" id="nav-chat" data-view="chat">💬 对话</button>
+          <button type="button" class="btn ghost" id="nav-persona" data-view="persona">🎀 角色</button>
+          <button type="button" class="btn ghost" id="nav-settings" data-view="settings">🔑 API</button>
+        </footer>
+      </aside>
+
+      <main class="stage" id="chat-main">
+        <section class="view view-chat" id="view-chat" data-view-panel="chat">
+          <div class="stage-banner">
+            <div class="portrait-card">
+              <span class="portrait-tape" aria-hidden="true"></span>
+              <img id="portrait-image" class="portrait-image" alt="" draggable="false" />
+              <div class="portrait-meta">
+                <div class="portrait-name" id="portrait-name">Doro</div>
+                <div class="portrait-status" id="portrait-status">待命中</div>
+                <div class="companion-copy" id="companion-copy">想听你说今天的故事 ♡</div>
+              </div>
+            </div>
+            <div class="banner-tools">
+              <button type="button" class="btn ghost" id="btn-rename">重命名</button>
+              <button type="button" class="btn danger-ghost" id="btn-delete">删除会话</button>
+            </div>
+          </div>
+
+          <div class="dialogue-scroll" id="dialogue-scroll" aria-live="polite">
+            <div class="empty-state" id="empty-state">
+              <span class="empty-sticker" aria-hidden="true">♡</span>
+              <strong>这一页还是空白的呢</strong>
+              <span>写下第一句话，桌宠就在这里听你说～</span>
+            </div>
+            <div class="message-list" id="message-list"></div>
+          </div>
+
+          <form class="composer" id="composer">
+            <span class="composer-sticker" aria-hidden="true">FOR YOU ♡</span>
+            <label class="sr-only" for="composer-input">消息内容</label>
+            <textarea
+              id="composer-input"
+              class="composer-input"
+              rows="2"
+              maxlength="4000"
+              placeholder="今天想和我说什么呀…"
+            ></textarea>
+            <div class="composer-actions">
+              <div class="composer-hint" id="composer-hint">Enter 发送 · Shift+Enter 换行</div>
+              <button type="button" class="btn ghost" id="btn-stop" hidden>停止</button>
+              <button type="submit" class="btn primary" id="btn-send">发送</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="view view-persona" id="view-persona" data-view-panel="persona" hidden>
+          <header class="panel-head">
+            <div class="panel-kicker">CHARACTER CARD · 角色小卡</div>
+            <h1>角色设定</h1>
+            <p>微调与当前桌宠的相处方式。核心人设由应用内置，不可直接编辑。</p>
+          </header>
+          <form class="persona-form" id="persona-form">
+            <label>
+              <span>称呼你为</span>
+              <input id="persona-call" name="userCallName" maxlength="32" />
+            </label>
+            <label>
+              <span>关系</span>
+              <input id="persona-relation" name="relationship" maxlength="64" />
+            </label>
+            <label>
+              <span>性格倾向</span>
+              <select id="persona-personality" name="personalityBias">
+                <option value="caring">体贴温柔</option>
+                <option value="mischievous">古灵精怪</option>
+                <option value="shy">害羞内敛</option>
+                <option value="confident">自信开朗</option>
+                <option value="sleepy">软软困困</option>
+              </select>
+            </label>
+            <label>
+              <span>语气偏好</span>
+              <select id="persona-tone" name="tonePreference">
+                <option value="gentle">温柔</option>
+                <option value="energetic">元气</option>
+                <option value="tsundere">傲娇</option>
+                <option value="soft">软糯</option>
+                <option value="playful">俏皮</option>
+              </select>
+            </label>
+            <label class="full">
+              <span>额外偏好（可选）</span>
+              <textarea id="persona-notes" name="extraNotes" rows="4" maxlength="500"></textarea>
+            </label>
+            <div class="form-actions">
+              <span class="form-status" id="persona-status" aria-live="polite"></span>
+              <button type="submit" class="btn primary">保存角色设定</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="view view-settings" id="view-settings" data-view-panel="settings" hidden>
+          <header class="panel-head">
+            <div class="panel-kicker">SECRET POCKET · 安全口袋</div>
+            <h1>DeepSeek API</h1>
+            <p>
+              Key 仅保存在本机（系统加密），不会上传到其它服务。模型固定为
+              deepseek-v4-flash（非思考模式）。
+            </p>
+          </header>
+          <form class="settings-form" id="settings-form">
+            <div class="key-status" id="key-status">未配置</div>
+            <label class="full">
+              <span>API Key</span>
+              <div class="key-row">
+                <input
+                  id="api-key-input"
+                  type="password"
+                  autocomplete="off"
+                  spellcheck="false"
+                  placeholder="sk-…"
+                />
+                <button type="button" class="btn ghost" id="btn-toggle-key">显示</button>
+              </div>
+            </label>
+            <div class="form-actions wrap">
+              <button type="submit" class="btn primary">保存</button>
+              <button type="button" class="btn ghost" id="btn-test-key">测试连接</button>
+              <button type="button" class="btn danger-ghost" id="btn-clear-key">删除 Key</button>
+            </div>
+            <div class="form-status" id="settings-status" aria-live="polite"></div>
+          </form>
+        </section>
+      </main>
+    </div>
+    <dialog class="rename-dialog" id="rename-dialog" aria-labelledby="rename-title">
+      <form class="rename-card" id="rename-form" method="dialog">
+        <div class="rename-tape" aria-hidden="true">NEW TITLE</div>
+        <h2 id="rename-title">给这一页起个名字</h2>
+        <p>换成一眼就能认出来的会话标题吧～</p>
+        <label for="rename-input">会话名称</label>
+        <input
+          id="rename-input"
+          name="title"
+          maxlength="64"
+          autocomplete="off"
+          required
+        />
+        <div class="rename-actions">
+          <button type="button" class="btn ghost" id="btn-rename-cancel">取消</button>
+          <button type="submit" class="btn primary">保存名称</button>
+        </div>
+      </form>
+    </dialog>
+    <script type="module" src="./chat.ts"></script>
+  </body>
+</html>

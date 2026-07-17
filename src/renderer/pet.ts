@@ -1,6 +1,7 @@
 import type { PetId, PetVisualState } from '../shared/types'
 import { PET_LABELS } from '../shared/types'
 import type { Bubble } from './bubble'
+import { PET_ACTIONS, runPetAction } from './pet-actions'
 
 import feibiUrl from './assets/pets/feibi-pixel.png'
 import gugaUrl from './assets/pets/guga-pixel.png'
@@ -26,7 +27,7 @@ const LINES: Record<PetId, string[]> = {
     '有货无货，交给我～',
     '再点一下也没关系哦',
     '工作间隙也要喝水呀',
-    '双击可以打开面板哦',
+    '点我可以打开菜单哦',
     '菲比站岗中…',
     '别担心，我陪着你',
     '这条链接看起来可疑吗？',
@@ -50,7 +51,7 @@ const LINES: Record<PetId, string[]> = {
     '咕嘎守护中',
     '发现缺货就咕嘎！',
     '咕嘎比你先醒',
-    '双击面板，咕嘎带路',
+    '点我打开菜单，咕嘎带路',
     '咕嘎咕～别走神',
     '今天也要咕嘎一整天',
     '咕嘎！任务来了吗！'
@@ -70,7 +71,7 @@ const LINES: Record<PetId, string[]> = {
     'Doro 什么都看得见',
     '缺货警报？交给我',
     '摸鱼？不存在的',
-    '双击我，面板开门！',
+    '点我一下，菜单开门！',
     '嘿嘿嘿，又被戳',
     'Doro 今日份元气满满',
     '查库存也要开心点嘛'
@@ -89,7 +90,7 @@ const LINES: Record<PetId, string[]> = {
     '摸头杀…可以的',
     '饿了要吃软软的',
     '糯糯不会跑掉的',
-    '双击打开面板呀',
+    '点我打开菜单呀',
     '今天也要软绵绵',
     '呼…打个小哈欠',
     '有货了会开心告诉你',
@@ -205,11 +206,6 @@ export class PetController {
       void window.desktopPet.showContextMenu()
     })
 
-    this.stage.addEventListener('dblclick', (e) => {
-      e.preventDefault()
-      void window.desktopPet.openPanel()
-    })
-
     this.image.addEventListener('animationend', (e) => {
       if (
         e.animationName === 'click-bounce' &&
@@ -231,6 +227,32 @@ export class PetController {
 
   private playClick(): void {
     this.applyState('click')
+    // 若已打开菜单则收起，否则展示可扩展功能菜单
+    if (this.bubble.isMenuOpen()) {
+      this.bubble.hide()
+      return
+    }
+    this.bubble.show('想做什么呢？', 'normal', {
+      persistent: true,
+      actions: PET_ACTIONS,
+      onAction: (actionId) => {
+        void runPetAction(actionId, this.petId)
+      }
+    })
+  }
+
+  /** 仅在空闲且没有其它气泡时展示随机台词。 */
+  showRandomIdleLine(): boolean {
+    if (!this.canShowRandomIdleLine()) return false
     this.bubble.show(this.randomLine())
+    return true
+  }
+
+  canShowRandomIdleLine(): boolean {
+    return (
+      !this.dragging &&
+      this.businessOverride === null &&
+      this.bubble.canShowIdleMessage()
+    )
   }
 }

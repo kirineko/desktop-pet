@@ -240,6 +240,120 @@ export function jobElapsedMs(job: JobRecord, now = Date.now()): number {
   return Math.max(0, end - job.startedAt)
 }
 
+/** —— AI 角色对话 —— */
+
+export type ChatMessageRole = 'user' | 'assistant' | 'system'
+
+export type ChatTonePreference =
+  | 'gentle'
+  | 'energetic'
+  | 'tsundere'
+  | 'soft'
+  | 'playful'
+
+export type ChatPersonalityBias =
+  | 'caring'
+  | 'mischievous'
+  | 'shy'
+  | 'confident'
+  | 'sleepy'
+
+export interface PersonaProfileFields {
+  userCallName: string
+  relationship: string
+  personalityBias: ChatPersonalityBias
+  tonePreference: ChatTonePreference
+  extraNotes: string
+}
+
+export interface PersonaProfile extends PersonaProfileFields {
+  petId: PetId
+  updatedAt: number
+}
+
+export interface ConversationRecord {
+  id: string
+  petId: PetId
+  title: string
+  createdAt: number
+  updatedAt: number
+  lastMessagePreview: string | null
+}
+
+export interface ChatMessageRecord {
+  id: string
+  conversationId: string
+  role: ChatMessageRole
+  content: string
+  createdAt: number
+  status: 'complete' | 'streaming' | 'error' | 'cancelled'
+  errorCode?: ChatErrorCode | null
+}
+
+export type ChatErrorCode =
+  | 'missing_api_key'
+  | 'invalid_api_key'
+  | 'rate_limited'
+  | 'network'
+  | 'content_filter'
+  | 'insufficient_resource'
+  | 'aborted'
+  | 'unknown'
+
+export interface ApiKeyStatus {
+  configured: boolean
+  masked: string | null
+  encryptionAvailable: boolean
+}
+
+export type ChatStreamEvent =
+  | {
+      type: 'start'
+      conversationId: string
+      userMessageId: string
+      assistantMessageId: string
+    }
+  | {
+      type: 'delta'
+      conversationId: string
+      assistantMessageId: string
+      delta: string
+    }
+  | {
+      type: 'done'
+      conversationId: string
+      assistantMessageId: string
+      content: string
+    }
+  | {
+      type: 'error'
+      conversationId: string
+      assistantMessageId: string
+      code: ChatErrorCode
+      message: string
+    }
+  | {
+      type: 'cancelled'
+      conversationId: string
+      assistantMessageId: string
+    }
+
+export interface OpenChatOptions {
+  petId?: PetId
+  view?: 'chat' | 'persona' | 'settings'
+  conversationId?: string
+}
+
+export interface SendChatMessageInput {
+  conversationId: string
+  content: string
+}
+
+export interface UpdatePersonaInput {
+  petId: PetId
+  fields: PersonaProfileFields
+}
+
 /** preload 暴露给渲染进程的 API */
 export interface DesktopPetApi {
   getConfig: () => Promise<PetConfig>
@@ -249,6 +363,8 @@ export interface DesktopPetApi {
   savePosition: () => Promise<void>
   showContextMenu: () => Promise<void>
   openPanel: () => Promise<void>
+  openChat: (options?: OpenChatOptions) => Promise<void>
+  getChatOpenOptions: () => Promise<OpenChatOptions | null>
   showPet: () => Promise<void>
   getNetworkStatus: () => Promise<NetworkStatus>
   getJobStatus: () => Promise<JobStatus>
@@ -271,9 +387,33 @@ export interface DesktopPetApi {
   exportFailed: (jobId: string) => Promise<string>
   exportOutOfStock: (jobId: string) => Promise<string>
   openExternal: (url: string) => Promise<void>
+  getApiKeyStatus: () => Promise<ApiKeyStatus>
+  setApiKey: (apiKey: string) => Promise<ApiKeyStatus>
+  clearApiKey: () => Promise<ApiKeyStatus>
+  testApiKey: (apiKey?: string) => Promise<{ ok: boolean; message: string }>
+  getPersonaProfile: (petId: PetId) => Promise<PersonaProfile>
+  updatePersonaProfile: (input: UpdatePersonaInput) => Promise<PersonaProfile>
+  listConversations: (petId: PetId) => Promise<ConversationRecord[]>
+  createConversation: (petId: PetId, title?: string) => Promise<ConversationRecord>
+  renameConversation: (
+    conversationId: string,
+    title: string
+  ) => Promise<ConversationRecord | null>
+  deleteConversation: (conversationId: string) => Promise<{ ok: boolean }>
+  getConversationMessages: (
+    conversationId: string
+  ) => Promise<ChatMessageRecord[]>
+  sendChatMessage: (input: SendChatMessageInput) => Promise<{
+    ok: boolean
+    error?: string
+    code?: ChatErrorCode
+  }>
+  stopChatGeneration: (conversationId?: string) => Promise<{ ok: boolean }>
   onConfigChanged: (cb: (config: PetConfig) => void) => () => void
   onBusinessEvent: (cb: (event: PetBusinessEvent) => void) => () => void
   onJobUpdated: (cb: (job: JobRecord | null) => void) => () => void
+  onChatStream: (cb: (event: ChatStreamEvent) => void) => () => void
+  onChatOpenOptions: (cb: (options: OpenChatOptions) => void) => () => void
 }
 
 declare global {

@@ -30,7 +30,7 @@ body {
 .bubble {
   appearance: none;
   position: relative;
-  max-width: 150px;
+  max-width: 168px;
   margin-bottom: 6px;
   padding: 8px 10px;
   background: rgba(255, 255, 255, 0.95);
@@ -46,6 +46,81 @@ body {
   pointer-events: none;
   font-family: inherit;
   opacity: 1;
+}
+
+.bubble.menu {
+  max-width: 172px;
+  padding: 8px 8px 10px;
+  pointer-events: auto;
+  text-align: left;
+}
+
+.bubble-close {
+  appearance: none;
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #6b7280;
+  font: 700 19px/1 sans-serif;
+  cursor: pointer;
+}
+
+.bubble-close:hover,
+.bubble-close:focus-visible {
+  outline: none;
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.bubble-title {
+  padding: 2px 22px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #4b5563;
+  text-align: center;
+}
+
+.bubble-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bubble-action {
+  appearance: none;
+  width: 100%;
+  border: 2px solid #111827;
+  border-radius: 8px;
+  background: #fff7ed;
+  color: #111827;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 8px;
+  cursor: pointer;
+  text-align: center;
+  box-shadow: 0 2px 0 #111827;
+}
+
+.bubble-action:hover,
+.bubble-action:focus-visible {
+  background: #ffedd5;
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.bubble-action:active {
+  transform: translateY(1px);
+  box-shadow: none;
 }
 
 .bubble.dismissible {

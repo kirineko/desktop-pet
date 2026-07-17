@@ -28,7 +28,8 @@ export default defineConfig({
       rollupOptions: {
         input: {
           index: resolve(__dirname, 'src/renderer/index.html'),
-          panel: resolve(__dirname, 'src/renderer/panel.html')
+          panel: resolve(__dirname, 'src/renderer/panel.html'),
+          chat: resolve(__dirname, 'src/renderer/chat.html')
         }
       }
     }

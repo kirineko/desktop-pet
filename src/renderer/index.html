@@ -11,14 +11,13 @@
   </head>
   <body>
     <div id="app">
-      <button
+      <div
         id="bubble"
         class="bubble hidden"
-        type="button"
+        role="status"
         aria-live="polite"
         aria-label="桌宠状态消息"
-        disabled
-      ></button>
+      ></div>
       <div id="pet-stage" class="pet-stage">
         <img id="pet-image" class="pet-image state-idle" alt="桌面宠物" draggable="false" />
         <div id="session-hud" class="session-hud hidden" aria-live="polite">
@@ -36,7 +35,7 @@
               <span class="out">无货 <strong id="session-detail-out">0</strong></span>
               <span class="fail">失败 <strong id="session-detail-fail">0</strong></span>
             </div>
-            <div class="session-detail-hint">双击打开面板</div>
+            <div class="session-detail-hint">单击桌宠打开功能菜单</div>
           </div>
           <div id="session-chip" class="session-chip" title="悬停查看本次启动汇总">
             <div class="session-chip-line" id="session-chip-progress">0/0 · 0%</div>
